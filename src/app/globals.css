@@ -142,11 +142,12 @@
 }
 
 .search-highlight {
-  background: oklch(0.92 0.15 85);
-  color: inherit;
+  background-color: #fef08a !important;
+  color: inherit !important;
   border-radius: 2px;
   padding: 0 2px;
 }
 .dark .search-highlight {
-  background: oklch(0.45 0.12 85);
+  background-color: #713f12 !important;
+  color: #fef9c3 !important;
 }

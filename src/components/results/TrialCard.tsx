@@ -47,20 +47,18 @@ function formatCtgDate(dateStr: string): string {
 
 function Highlight({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
-  const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-  const lq = query.trim().toLowerCase();
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.toLowerCase() === lq ? (
-          <span key={i} className="search-highlight">
-            {part}
-          </span>
-        ) : part
-      )}
-    </>
-  );
+  const q = query.trim().toLowerCase();
+  const result: (string | JSX.Element)[] = [];
+  let remaining = text;
+  let key = 0;
+  while (remaining.length > 0) {
+    const idx = remaining.toLowerCase().indexOf(q);
+    if (idx === -1) { result.push(remaining); break; }
+    if (idx > 0) result.push(remaining.slice(0, idx));
+    result.push(<span key={key++} className="search-highlight">{remaining.slice(idx, idx + q.length)}</span>);
+    remaining = remaining.slice(idx + q.length);
+  }
+  return <>{result}</>;
 }
 
 interface Props {
@@ -72,14 +70,30 @@ interface Props {
   searchQuery?: string;
 }
 
+function linkify(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return <>{parts.map((part, i) =>
+    /^https?:\/\//.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{part}</a>
+      : part
+  )}</>;
+}
+
 function ContactChip({ name, phone, email, role }: { name: string; phone: string; email: string; role: string }) {
+  const isUrl = /^https?:\/\//.test(phone);
   return (
     <div className="text-xs space-y-0.5 p-2 rounded bg-muted/50">
-      <p className="font-medium">{name || "Study Contact"} {role && <span className="text-muted-foreground font-normal">· {role}</span>}</p>
+      <p className="font-medium">{name ? linkify(name) : "Study Contact"} {role && <span className="text-muted-foreground font-normal">· {linkify(role)}</span>}</p>
       {phone && (
-        <a href={`tel:${phone}`} className="flex items-center gap-1 text-primary hover:underline">
-          <Phone className="h-3 w-3" /> {phone}
-        </a>
+        isUrl ? (
+          <a href={phone} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline break-all">
+            <ExternalLink className="h-3 w-3 shrink-0" /> {phone}
+          </a>
+        ) : (
+          <a href={`tel:${phone}`} className="flex items-center gap-1 text-primary hover:underline">
+            <Phone className="h-3 w-3" /> {phone}
+          </a>
+        )
       )}
       {email && (
         <a href={`mailto:${email}`} className="flex items-center gap-1 text-primary hover:underline">
