@@ -34,7 +34,7 @@ export default function Home() {
 
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Stop manually sifting through clinicaltrials.gov. Enter the patient&apos;s profile
-          once — ClinicalSift ranks every recruiting trial by eligibility and your preferences,
+          once — Clifton ranks every recruiting trial by eligibility and your preferences,
           and makes it easy to share top picks with family or your doctor.
         </p>
 
@@ -119,7 +119,7 @@ export default function Home() {
               {
                 icon: <Bell className="h-5 w-5" />,
                 title: "New trial alerts",
-                desc: "ClinicalSift remembers the last search results. Run it again any time — new trials that appeared since your last check are highlighted automatically.",
+                desc: "Clifton remembers the last search results. Run it again any time — new trials that appeared since your last check are highlighted automatically.",
               },
             ].map((f, i) => (
               <div key={i} className="flex gap-3 p-4 rounded-lg bg-background border">
@@ -154,7 +154,7 @@ export default function Home() {
             <span className="text-sm font-medium uppercase tracking-wide">Support the mission</span>
           </div>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-            ClinicalSift is completely free and always will be. If it has helped you or someone you
+            Clifton is completely free and always will be. If it has helped you or someone you
             love, consider supporting Alzheimer&apos;s research — or the ongoing development of this tool.
           </p>
 
@@ -188,7 +188,7 @@ export default function Home() {
                 Support the developer
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                ClinicalSift is built and maintained by one person in their spare time.
+                Clifton is built and maintained by one person in their spare time.
                 If you&apos;d like to help keep the lights on:
               </p>
               <a
@@ -211,7 +211,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t py-8 px-4 text-center text-xs text-muted-foreground space-y-2">
         <p>
-          ClinicalSift · Data sourced from{" "}
+          Clifton · Data sourced from{" "}
           <a href="https://clinicaltrials.gov" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
             ClinicalTrials.gov
           </a>

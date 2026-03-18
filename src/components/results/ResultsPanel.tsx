@@ -135,7 +135,7 @@ function buildPrintHtml(favTrials: RankedTrial[], conditionLabel: string): strin
       @media print { body { padding: 0; } .trial { page-break-inside: avoid; } }
     </style></head><body>
     <h1>Clinical Trial Action Plan</h1>
-    <div class="subtitle">${conditionLabel} &nbsp;&bull;&nbsp; ${favTrials.length} shortlisted trial${favTrials.length !== 1 ? "s" : ""} &nbsp;&bull;&nbsp; Generated ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} &nbsp;&bull;&nbsp; ClinicalSift</div>
+    <div class="subtitle">${conditionLabel} &nbsp;&bull;&nbsp; ${favTrials.length} shortlisted trial${favTrials.length !== 1 ? "s" : ""} &nbsp;&bull;&nbsp; Generated ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} &nbsp;&bull;&nbsp; Clifton</div>
     ${trialBlocks}
   </body></html>`;
 }

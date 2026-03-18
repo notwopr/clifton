@@ -9,7 +9,7 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("clinicalsift_theme");
+    const saved = localStorage.getItem("clifton_theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const isDark = saved ? saved === "dark" : prefersDark;
     setDark(isDark);
@@ -20,7 +20,7 @@ export function ThemeToggle() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("clinicalsift_theme", next ? "dark" : "light");
+    localStorage.setItem("clifton_theme", next ? "dark" : "light");
   }
 
   if (!mounted) return <div className="w-8 h-8" />;

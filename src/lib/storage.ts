@@ -1,7 +1,7 @@
 import type { UserProfile } from "./types";
 import { defaultProfile } from "./types";
 
-const STORAGE_KEY = "clinicalsift_profile";
+const STORAGE_KEY = "clifton_profile";
 
 export function saveProfile(profile: UserProfile): void {
   if (typeof window === "undefined") return;
@@ -46,7 +46,7 @@ export function clearProfile(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-const SNAPSHOT_KEY = "clinicalsift_snapshot";
+const SNAPSHOT_KEY = "clifton_snapshot";
 
 interface TrialSnapshot {
   condition: string;

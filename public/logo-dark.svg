@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40">
+  <!-- PLACEHOLDER: Replace with your Clifton logo graphic for dark backgrounds (no text needed — text is rendered in code beside it) -->
+  <rect width="160" height="40" rx="6" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="80" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#64748b" text-anchor="middle">[ Clifton logo dark ]</text>
+</svg>

@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ClinicalSift — Find & Rank Clinical Trials",
+  title: "Clifton — Find & Rank Clinical Trials",
   description:
     "Enter a patient profile and instantly get a ranked list of recruiting clinical trials matched to your eligibility and preferences. Free, private, no account needed.",
 };
@@ -28,8 +28,10 @@ export default function RootLayout({
       >
         <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
           <div className="container max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link href="/" className="font-bold text-lg tracking-tight">
-              ClinicalSift
+            <Link href="/" className="flex items-center gap-2">
+              {/* Replace /logo.svg with your actual logo file */}
+              <img src="/logo.svg" alt="Clifton" className="h-7 w-auto" />
+              <span className="font-bold text-lg tracking-tight">Clifton</span>
             </Link>
             <ThemeToggle />
           </div>

@@ -1,18 +1,23 @@
-# ClinicalSift
+# Clifton
+
+<!-- Replace this line with your actual logo once ready: -->
+<!-- ![Clifton](public/logo.svg) -->
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
-ClinicalSift pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time and ranks them by how well they fit a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
+> **Why "Clifton"?** The name is a portmanteau of **Cli**nical and si**ft** — *Clinical* + *sift* → *Clift* → *Clifton*. It was originally built to search for Alzheimer's trials for a family member.
 
-It was built because searching ClinicalTrials.gov manually — filtering, reading eligibility criteria, cross-referencing medications and comorbidities — takes hours per search and has to be repeated every few weeks as new trials open. ClinicalSift does that work in seconds.
+Clifton pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time and ranks them by how well they fit a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
 
-> **Not medical advice.** ClinicalSift helps you discover and compare trials; it does not provide medical guidance. Always consult a qualified healthcare provider before making any treatment decisions.
+It was built because searching ClinicalTrials.gov manually — filtering, reading eligibility criteria, cross-referencing medications and comorbidities — takes hours per search and has to be repeated every few weeks as new trials open. Clifton does that work in seconds.
+
+> **Not medical advice.** Clifton helps you discover and compare trials; it does not provide medical guidance. Always consult a qualified healthcare provider before making any treatment decisions.
 
 ---
 
 ## Live demo
 
-[clinicalsift.vercel.app](https://clinicalsift.vercel.app) *(update this link after deploying)*
+[clifton.vercel.app](https://clifton.vercel.app) *(update this link after deploying)*
 
 ---
 
@@ -55,8 +60,8 @@ It was built because searching ClinicalTrials.gov manually — filtering, readin
 ### Run locally
 
 ```bash
-git clone https://github.com/notwopr/clinicalsift.git
-cd clinicalsift
+git clone https://github.com/notwopr/clifton.git
+cd clifton
 npm install
 npm run dev
 ```
@@ -74,7 +79,7 @@ npm start
 
 ### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/notwopr/clinicalsift)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/notwopr/clifton)
 
 No environment variables needed. The free tier is sufficient.
 
@@ -101,6 +106,11 @@ src/
     eligibility.ts        # Data extraction (delivery methods, procedures, locations, distances)
     ranking.ts            # Scoring engine (eligibility, treatment access, preference match)
     storage.ts            # localStorage helpers (profile + trial snapshots)
+public/
+  logo.svg                # Full wordmark logo (navbar, light mode)
+  logo-dark.svg           # Wordmark logo variant for dark backgrounds
+  icon.svg                # Square icon/logomark only (app icon, favicon source)
+  og-image.png            # Social sharing preview (1200×630)
 ```
 
 ### Data flow
@@ -115,7 +125,7 @@ src/
 
 ## Privacy
 
-- No user data is sent to any server operated by ClinicalSift
+- No user data is sent to any server operated by Clifton
 - Profile data is stored only in your browser's `localStorage`
 - The only outbound requests are to ClinicalTrials.gov (condition + keywords) and zippopotam.us (ZIP code → coordinates)
 - No analytics, no cookies, no tracking of any kind
@@ -132,7 +142,7 @@ Bug reports and pull requests are welcome. Please open an issue before starting 
 
 ## Disclaimer
 
-ClinicalSift is an independent tool and is **not affiliated with** ClinicalTrials.gov, the NIH, the FDA, or any pharmaceutical company or clinical research organization.
+Clifton is an independent tool and is **not affiliated with** ClinicalTrials.gov, the NIH, the FDA, or any pharmaceutical company or clinical research organization.
 
 Trial data is sourced from ClinicalTrials.gov and may not be complete or current. Eligibility scoring is heuristic and **will not catch every exclusion criterion** — always read the full protocol and speak with a qualified investigator before enrolling.
 
@@ -142,13 +152,13 @@ Trial data is sourced from ClinicalTrials.gov and may not be complete or current
 
 ## Donations
 
-ClinicalSift is and will always be free. If it has helped you or someone you love, consider supporting Alzheimer's research:
+Clifton is and will always be free. If it has helped you or someone you love, consider supporting Alzheimer's research:
 
 - [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate)
 - [BrightFocus Foundation](https://www.brightfocus.org/alzheimers-disease/donate)
 - [Alzheimer's Research UK](https://www.alzheimersresearchuk.org/donate/)
 
-To support the ongoing development of ClinicalSift:
+To support the ongoing development of Clifton:
 
 - [Ko-fi](https://ko-fi.com/notwopr)
 

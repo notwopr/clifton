@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- PLACEHOLDER: Replace with your Clifton square icon/logomark (no text) -->
+  <!-- This file is used for app icons, favicons, and PWA manifest -->
+  <rect width="512" height="512" rx="80" fill="#f1f5f9"/>
+  <rect x="40" y="40" width="432" height="432" rx="60" fill="none" stroke="#cbd5e1" stroke-width="8" stroke-dasharray="20 14"/>
+  <text x="256" y="280" font-family="system-ui, sans-serif" font-size="80" fill="#94a3b8" text-anchor="middle">C</text>
+</svg>

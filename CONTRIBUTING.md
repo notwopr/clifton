@@ -1,10 +1,10 @@
-# Contributing to ClinicalSift
+# Contributing to Clifton
 
-Thank you for your interest in contributing. ClinicalSift exists to help patients and caregivers navigate clinical trials — contributions that improve accuracy, accessibility, or usability are very welcome.
+Thank you for your interest in contributing. Clifton exists to help patients and caregivers navigate clinical trials — contributions that improve accuracy, accessibility, or usability are very welcome.
 
 ## Ground rules
 
-1. **Mission first.** ClinicalSift is a free public-good tool. Changes that compromise user privacy, introduce ads, or gate features behind a paywall will not be accepted.
+1. **Mission first.** Clifton is a free public-good tool. Changes that compromise user privacy, introduce ads, or gate features behind a paywall will not be accepted.
 2. **No server-side user data.** The zero-server, localStorage-only architecture is intentional. Changes that send user profiles or medical history to an external server (other than ClinicalTrials.gov for the search query itself) require a very compelling case.
 3. **Not medical advice.** Do not add language that could be interpreted as medical guidance. The app surfaces data; it does not make recommendations.
 4. **Open an issue first** before starting significant work (new features, architectural changes). A quick discussion can save a lot of wasted effort.

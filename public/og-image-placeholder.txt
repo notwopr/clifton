@@ -1,0 +1,15 @@
+OG IMAGE PLACEHOLDER
+====================
+File needed: public/og-image.png
+Dimensions: 1200 × 630 px
+Used for: Twitter/X cards, Facebook/LinkedIn link previews, Slack unfurls
+
+Suggested content:
+- Clifton logo (large, centered or top-left)
+- Tagline: "Find & rank clinical trials — matched to your profile"
+- Dark or branded background
+- Subtle visual (e.g. abstract medical/research graphic)
+
+Once created, add to layout.tsx metadata:
+  openGraph: { images: [{ url: '/og-image.png', width: 1200, height: 630 }] }
+  twitter: { card: 'summary_large_image', images: ['/og-image.png'] }
