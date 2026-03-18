@@ -5,9 +5,7 @@
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
-> **Why "Clifton"?** The name is a portmanteau of **Cli**nical and si**ft** — *Clinical* + *sift* → *Clift* → *Clifton*. It was originally built to search for Alzheimer's trials for a family member.
-
-Clifton pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time and ranks them by how well they fit a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
+**Clifton** (**cli**nical trial si**fton**) pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time and ranks them by how well they fit a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
 
 It was built because searching ClinicalTrials.gov manually — filtering, reading eligibility criteria, cross-referencing medications and comorbidities — takes hours per search and has to be repeated every few weeks as new trials open. Clifton does that work in seconds.
 
