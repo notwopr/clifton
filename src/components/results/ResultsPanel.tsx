@@ -110,25 +110,25 @@ function buildPrintHtml(favTrials: RankedTrial[], conditionLabel: string): strin
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
     <title>Clinical Trial Action Plan — ${conditionLabel}</title>
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Georgia, "Times New Roman", serif; font-size: 13px; color: #1a1a1a; padding: 36px 48px; max-width: 800px; line-height: 1.6; }
-      h1 { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 3px; }
-      .subtitle { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; color: #666; font-size: 12px; margin-bottom: 32px; }
+      * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, Helvetica Neue, Arial, sans-serif; }
+      body { font-size: 13px; color: #1a1a1a; padding: 36px 48px; max-width: 800px; line-height: 1.6; }
+      h1 { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+      .subtitle { color: #666; font-size: 12px; margin-bottom: 32px; }
       .trial { margin-bottom: 36px; padding-bottom: 36px; border-bottom: 1.5px solid #ddd; }
       .trial:last-child { border-bottom: none; }
-      .trial-num { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: #999; margin-bottom: 6px; }
-      h2 { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 1.3; margin-bottom: 8px; color: #111; }
-      .meta-line { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 11px; color: #555; margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+      .trial-num { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: #999; margin-bottom: 6px; }
+      h2 { font-size: 16px; font-weight: 600; line-height: 1.3; margin-bottom: 8px; color: #111; }
+      .meta-line { font-size: 11px; color: #555; margin-bottom: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
       .pill { background: #f0f0f0; border-radius: 3px; padding: 1px 6px; color: #444; }
       .pill.green { background: #e8f5ee; color: #1a6b33; }
       .score-pill { background: #1a4a8a; color: white; border-radius: 3px; padding: 1px 8px; font-weight: 600; }
-      .info-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 12px; }
+      .info-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }
       .info-table td { padding: 3px 0; vertical-align: top; }
       .info-table td:first-child { width: 150px; color: #888; padding-right: 12px; }
       .info-table td:last-child { color: #222; }
       .summary { font-size: 12.5px; color: #444; line-height: 1.65; margin-bottom: 12px; }
-      .section-label { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 12px 0 5px; }
-      .contact-line, .site-line { font-family: -apple-system, Helvetica Neue, Arial, sans-serif; font-size: 12px; color: #333; margin-bottom: 4px; }
+      .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 12px 0 5px; }
+      .contact-line, .site-line { font-size: 12px; color: #333; margin-bottom: 4px; }
       .site-contact { color: #666; font-size: 11px; }
       a { color: #1a4a8a; text-decoration: none; }
       a:hover { text-decoration: underline; }

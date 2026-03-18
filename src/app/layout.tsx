@@ -27,11 +27,10 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
       >
         <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
-          <div className="container max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              {/* Replace /logo.svg with your actual logo file */}
-              <img src="/logo.svg" alt="Clifton" className="h-7 w-auto" />
-              <span className="font-bold text-lg tracking-tight">Clifton</span>
+          <div className="container max-w-5xl mx-auto px-4 h-20 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <img src="/logo.svg" alt="Clifton" className="h-14 w-auto dark:invert" />
+              <span className="font-bold text-3xl tracking-tight">Clifton</span>
             </Link>
             <ThemeToggle />
           </div>

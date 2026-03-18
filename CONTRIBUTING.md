@@ -45,7 +45,7 @@ Open a GitHub issue with the feature idea and the use case it solves. Issues tag
 
 ```bash
 git clone https://github.com/notwopr/clifton.git
-cd clinicalsift
+cd clifton
 npm install
 npm run dev        # starts on http://localhost:3000
 npm run build      # production build + type-check

@@ -81,6 +81,7 @@ function linkify(text: string) {
 
 function ContactChip({ name, phone, email, role }: { name: string; phone: string; email: string; role: string }) {
   const isUrl = /^https?:\/\//.test(phone);
+  const hasUrl = /https?:\/\//.test(phone);
   return (
     <div className="text-xs space-y-0.5 p-2 rounded bg-muted/50">
       <p className="font-medium">{name ? linkify(name) : "Study Contact"} {role && <span className="text-muted-foreground font-normal">· {linkify(role)}</span>}</p>
@@ -89,6 +90,8 @@ function ContactChip({ name, phone, email, role }: { name: string; phone: string
           <a href={phone} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline break-all">
             <ExternalLink className="h-3 w-3 shrink-0" /> {phone}
           </a>
+        ) : hasUrl ? (
+          <p className="flex items-center gap-1 break-all"><ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" /> {linkify(phone)}</p>
         ) : (
           <a href={`tel:${phone}`} className="flex items-center gap-1 text-primary hover:underline">
             <Phone className="h-3 w-3" /> {phone}

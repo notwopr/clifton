@@ -22,30 +22,40 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero */}
-      <section className="py-20 px-4 text-center space-y-6 bg-gradient-to-b from-background to-muted/30">
-        <Badge variant="outline" className="text-sm px-3 py-1">
-          Free · No account required · Your data stays on your device
-        </Badge>
+      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/30">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-10 sm:gap-16">
+          {/* Logo */}
+          <div className="shrink-0">
+            <img src="/logo.svg" alt="Clifton" className="h-96 sm:h-[32rem] w-auto dark:invert" />
+          </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
-          Find the right clinical trial.{" "}
-          <span className="text-primary">Automatically ranked for you.</span>
-        </h1>
+          {/* Text */}
+          <div className="flex flex-col gap-5 text-center sm:text-left">
+            <Badge variant="outline" className="text-sm px-3 py-1 self-center sm:self-start">
+              Free · No account required · Your data stays on your device
+            </Badge>
 
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Stop manually sifting through clinicaltrials.gov. Enter the patient&apos;s profile
-          once — Clifton ranks every recruiting trial by eligibility and your preferences,
-          and makes it easy to share top picks with family or your doctor.
-        </p>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
+              Find the right clinical trial.{" "}
+              <span className="text-primary">Automatically ranked for you.</span>
+            </h1>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-          <Button render={<Link href="/search" />} nativeButton={false} size="lg" className="gap-2 text-base">
-            <Search className="h-5 w-5" />
-            Start Searching
-          </Button>
-          <Button render={<a href="#how-it-works" />} nativeButton={false} variant="outline" size="lg" className="text-base">
-            How it works
-          </Button>
+            <p className="text-lg text-muted-foreground">
+              Stop manually sifting through clinicaltrials.gov. Enter the patient&apos;s profile
+              once — Clifton ranks every recruiting trial by eligibility and your preferences,
+              and makes it easy to share top picks with family or your doctor.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <Button render={<Link href="/search" />} nativeButton={false} size="lg" className="gap-2 text-base">
+                <Search className="h-5 w-5" />
+                Start Searching
+              </Button>
+              <Button render={<a href="#how-it-works" />} nativeButton={false} variant="outline" size="lg" className="text-base">
+                How it works
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -164,22 +174,15 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Donate to Alzheimer&apos;s research
               </p>
-              {[
-                { name: "Alzheimer's Association", url: "https://www.alz.org/help-support/i-want-to-help/donate", desc: "Largest funder of Alzheimer's research in the US" },
-                { name: "BrightFocus Foundation", url: "https://www.brightfocus.org/alzheimers-disease/donate", desc: "Funds early-career researchers worldwide" },
-                { name: "Alzheimer's Research UK", url: "https://www.alzheimersresearchuk.org/donate/", desc: "Leading dementia research charity in the UK" },
-              ].map((org) => (
-                <a
-                  key={org.name}
-                  href={org.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col gap-0.5 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
-                >
-                  <span className="text-sm font-medium group-hover:text-primary transition-colors">{org.name} →</span>
-                  <span className="text-xs text-muted-foreground">{org.desc}</span>
-                </a>
-              ))}
+              <a
+                href="https://www.alz.org/help-support/i-want-to-help/donate"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col gap-0.5 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
+              >
+                <span className="text-sm font-medium group-hover:text-primary transition-colors">Alzheimer&apos;s Association →</span>
+                <span className="text-xs text-muted-foreground">Largest funder of Alzheimer&apos;s research in the US</span>
+              </a>
             </div>
 
             {/* Developer support */}
@@ -187,11 +190,7 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Support the developer
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Clifton is built and maintained by one person in their spare time.
-                If you&apos;d like to help keep the lights on:
-              </p>
-              <a
+<a
                 href="https://ko-fi.com/notwopr"
                 target="_blank"
                 rel="noopener noreferrer"

@@ -153,8 +153,6 @@ Trial data is sourced from ClinicalTrials.gov and may not be complete or current
 Clifton is and will always be free. If it has helped you or someone you love, consider supporting Alzheimer's research:
 
 - [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate)
-- [BrightFocus Foundation](https://www.brightfocus.org/alzheimers-disease/donate)
-- [Alzheimer's Research UK](https://www.alzheimersresearchuk.org/donate/)
 
 To support the ongoing development of Clifton:
 
