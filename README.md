@@ -1,7 +1,6 @@
 # Clifton
 
-<!-- Replace this line with your actual logo once ready: -->
-<!-- ![Clifton](public/logo.svg) -->
+![Clifton](public/logo.svg)
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
