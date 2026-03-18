@@ -55,7 +55,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
     const idx = remaining.toLowerCase().indexOf(q);
     if (idx === -1) { result.push(remaining); break; }
     if (idx > 0) result.push(remaining.slice(0, idx));
-    result.push(<span key={key++} className="search-highlight">{remaining.slice(idx, idx + q.length)}</span>);
+    result.push(<span key={key++} style={{ backgroundColor: "#fef08a", color: "inherit", borderRadius: "2px", padding: "0 2px" }}>{remaining.slice(idx, idx + q.length)}</span>);
     remaining = remaining.slice(idx + q.length);
   }
   return <>{result}</>;
@@ -165,6 +165,26 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
             <h3 className="font-semibold text-sm leading-snug line-clamp-2">
               <Highlight text={extracted.briefTitle} query={searchQuery} />
             </h3>
+            {searchQuery.trim() && !extracted.briefTitle.toLowerCase().includes(searchQuery.trim().toLowerCase()) && (() => {
+              const q = searchQuery.trim().toLowerCase();
+              const fields = [
+                { label: "summary", text: extracted.summary },
+                ...extracted.inclusionCriteria.map(t => ({ label: "inclusion", text: t })),
+                ...extracted.exclusionCriteria.map(t => ({ label: "exclusion", text: t })),
+                ...extracted.conditions.map(t => ({ label: "condition", text: t })),
+              ];
+              const hit = fields.find(f => f.text.toLowerCase().includes(q));
+              if (!hit) return null;
+              const idx = hit.text.toLowerCase().indexOf(q);
+              const start = Math.max(0, idx - 35);
+              const end = Math.min(hit.text.length, idx + q.length + 55);
+              const snippet = (start > 0 ? "…" : "") + hit.text.slice(start, end) + (end < hit.text.length ? "…" : "");
+              return (
+                <p className="text-xs text-muted-foreground/70 mt-0.5 italic">
+                  Match in {hit.label}: <Highlight text={snippet} query={searchQuery} />
+                </p>
+              );
+            })()}
 
             <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
               <span className="font-mono">{extracted.nctId}</span>
@@ -271,7 +291,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
                   Study Summary
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
-                  {extracted.summary}
+                  <Highlight text={extracted.summary} query={searchQuery} />
                 </p>
               </div>
             )}
@@ -366,7 +386,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
                       {extracted.inclusionCriteria.slice(0, 8).map((c, i) => (
                         <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
                           <span className="text-green-500 shrink-0">+</span>
-                          {c}
+                          <Highlight text={c} query={searchQuery} />
                         </li>
                       ))}
                     </ul>
@@ -379,7 +399,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
                       {extracted.exclusionCriteria.slice(0, 8).map((c, i) => (
                         <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
                           <span className="text-red-400 shrink-0">−</span>
-                          {c}
+                          <Highlight text={c} query={searchQuery} />
                         </li>
                       ))}
                     </ul>
