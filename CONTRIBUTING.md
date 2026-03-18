@@ -44,7 +44,7 @@ Open a GitHub issue with the feature idea and the use case it solves. Issues tag
 ## Development setup
 
 ```bash
-git clone https://github.com/notwopr/clinicalsift.git
+git clone https://github.com/notwopr/clifton.git
 cd clinicalsift
 npm install
 npm run dev        # starts on http://localhost:3000

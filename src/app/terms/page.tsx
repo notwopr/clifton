@@ -86,7 +86,7 @@ export default function TermsPage() {
         <p className="text-muted-foreground">
           Clifton is open source software released under the{" "}
           <a
-            href="https://github.com/notwopr/clinicalsift/blob/main/LICENSE"
+            href="https://github.com/notwopr/clifton/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
@@ -109,7 +109,7 @@ export default function TermsPage() {
       <div className="pt-4 border-t text-xs text-muted-foreground">
         Questions? Open an issue on{" "}
         <a
-          href="https://github.com/notwopr/clinicalsift"
+          href="https://github.com/notwopr/clifton"
           target="_blank"
           rel="noopener noreferrer"
           className="underline"

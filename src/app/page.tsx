@@ -225,7 +225,7 @@ export default function Home() {
           <span>·</span>
           <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
           <span>·</span>
-          <a href="https://github.com/notwopr/clinicalsift" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+          <a href="https://github.com/notwopr/clifton" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
             Open source (MIT)
           </a>
         </div>

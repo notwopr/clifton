@@ -115,7 +115,7 @@ export default function PrivacyPage() {
           You don&apos;t have to take our word for it. Clifton is fully open source. You can
           review exactly what the code does — including all network requests — on{" "}
           <a
-            href="https://github.com/notwopr/clinicalsift"
+            href="https://github.com/notwopr/clifton"
             target="_blank"
             rel="noopener noreferrer"
             className="underline"
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
       <div className="pt-4 border-t text-xs text-muted-foreground">
         Questions? Open an issue on{" "}
         <a
-          href="https://github.com/notwopr/clinicalsift"
+          href="https://github.com/notwopr/clifton"
           target="_blank"
           rel="noopener noreferrer"
           className="underline"
