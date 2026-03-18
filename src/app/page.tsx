@@ -15,7 +15,6 @@ import {
   Share2,
   Bell,
   Heart,
-  Github,
   Coffee,
 } from "lucide-react";
 
@@ -192,18 +191,6 @@ export default function Home() {
                 ClinicalSift is built and maintained by one person in their spare time.
                 If you&apos;d like to help keep the lights on:
               </p>
-              <a
-                href="https://github.com/sponsors/notwopr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
-              >
-                <Github className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                <div>
-                  <span className="text-sm font-medium group-hover:text-primary transition-colors">GitHub Sponsors</span>
-                  <p className="text-xs text-muted-foreground">Monthly or one-time</p>
-                </div>
-              </a>
               <a
                 href="https://ko-fi.com/notwopr"
                 target="_blank"

@@ -150,7 +150,6 @@ ClinicalSift is and will always be free. If it has helped you or someone you lov
 
 To support the ongoing development of ClinicalSift:
 
-- [GitHub Sponsors](https://github.com/sponsors/notwopr)
 - [Ko-fi](https://ko-fi.com/notwopr)
 
 ---

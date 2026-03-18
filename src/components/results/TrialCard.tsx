@@ -54,7 +54,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === lq ? (
-          <span key={i} className="bg-yellow-200 dark:bg-yellow-700 rounded-sm px-0.5 text-inherit">
+          <span key={i} className="search-highlight">
             {part}
           </span>
         ) : part

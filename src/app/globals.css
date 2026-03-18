@@ -140,3 +140,13 @@
     color: inherit;
   }
 }
+
+.search-highlight {
+  background: oklch(0.92 0.15 85);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+.dark .search-highlight {
+  background: oklch(0.45 0.12 85);
+}
