@@ -1,65 +1,248 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Search,
+  Brain,
+  MapPin,
+  Shield,
+  Zap,
+  ChevronRight,
+  FlaskConical,
+  Sliders,
+  SortDesc,
+  Share2,
+  Bell,
+  Heart,
+  Github,
+  Coffee,
+} from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col min-h-screen">
+      {/* Hero */}
+      <section className="py-20 px-4 text-center space-y-6 bg-gradient-to-b from-background to-muted/30">
+        <Badge variant="outline" className="text-sm px-3 py-1">
+          Free · No account required · Your data stays on your device
+        </Badge>
+
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight max-w-3xl mx-auto leading-tight">
+          Find the right clinical trial.{" "}
+          <span className="text-primary">Automatically ranked for you.</span>
+        </h1>
+
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Stop manually sifting through clinicaltrials.gov. Enter the patient&apos;s profile
+          once — ClinicalSift ranks every recruiting trial by eligibility and your preferences,
+          and makes it easy to share top picks with family or your doctor.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <Button render={<Link href="/search" />} nativeButton={false} size="lg" className="gap-2 text-base">
+            <Search className="h-5 w-5" />
+            Start Searching
+          </Button>
+          <Button render={<a href="#how-it-works" />} nativeButton={false} variant="outline" size="lg" className="text-base">
+            How it works
+          </Button>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" className="py-16 px-4 max-w-5xl mx-auto w-full">
+        <h2 className="text-2xl font-bold text-center mb-10">How it works</h2>
+        <div className="grid sm:grid-cols-3 gap-6">
+          {[
+            {
+              icon: <Sliders className="h-6 w-6 text-primary" />,
+              title: "1. Build your profile",
+              desc: "Enter the patient's age, medical history, and what matters to you — distance limits, which procedures are dealbreakers, placebo tolerance, and more.",
+            },
+            {
+              icon: <FlaskConical className="h-6 w-6 text-primary" />,
+              title: "2. We search ClinicalTrials.gov",
+              desc: "Every actively recruiting trial for your condition is fetched in real time. No stale spreadsheets. Trials added today appear today.",
+            },
+            {
+              icon: <SortDesc className="h-6 w-6 text-primary" />,
+              title: "3. Get a ranked list",
+              desc: "Trials are scored on eligibility, treatment odds, and your preferences. Dealbreakers are flagged but kept visible — so you can change your mind.",
+            },
+          ].map((step, i) => (
+            <Card key={i} className="border-0 shadow-sm bg-muted/40">
+              <CardContent className="pt-6 space-y-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  {step.icon}
+                </div>
+                <h3 className="font-semibold">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.desc}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-10">
+            Everything you need — nothing you don&apos;t
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              {
+                icon: <Brain className="h-5 w-5" />,
+                title: "Smart eligibility matching",
+                desc: "Age, sex, comorbidities, and current medications are checked against exclusion criteria automatically.",
+              },
+              {
+                icon: <MapPin className="h-5 w-5" />,
+                title: "Distance-sorted trial sites",
+                desc: "Every site is ranked by drive distance from your ZIP. Contacts shown right there — one click to call or email.",
+              },
+              {
+                icon: <Zap className="h-5 w-5" />,
+                title: "Flexible dealbreakers",
+                desc: "Mark delivery methods, procedures, or free-form conditions as dealbreakers. Excluded trials stay visible — so you can reconsider.",
+              },
+              {
+                icon: <Shield className="h-5 w-5" />,
+                title: "Private by design",
+                desc: "Your profile never leaves your browser. No account, no email, no tracking — ever.",
+              },
+              {
+                icon: <Share2 className="h-5 w-5" />,
+                title: "Share with family & doctors",
+                desc: "Star your top trials, then export a formatted action plan as a PDF, copy it to share via text or email, or download as a text file.",
+              },
+              {
+                icon: <Bell className="h-5 w-5" />,
+                title: "New trial alerts",
+                desc: "ClinicalSift remembers the last search results. Run it again any time — new trials that appeared since your last check are highlighted automatically.",
+              },
+            ].map((f, i) => (
+              <div key={i} className="flex gap-3 p-4 rounded-lg bg-background border">
+                <div className="text-primary mt-0.5 shrink-0">{f.icon}</div>
+                <div>
+                  <p className="font-medium text-sm">{f.title}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 px-4 text-center space-y-5">
+        <h2 className="text-2xl font-bold">Ready to find a trial?</h2>
+        <p className="text-muted-foreground">
+          Takes about 5 minutes to set up. No sign-up required.
+        </p>
+        <Button render={<Link href="/search" />} nativeButton={false} size="lg" className="gap-2">
+          Get started
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </section>
+
+      {/* Support */}
+      <section className="py-16 px-4 bg-muted/20 border-t">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Heart className="h-4 w-4 text-rose-400" />
+            <span className="text-sm font-medium uppercase tracking-wide">Support the mission</span>
+          </div>
+          <p className="text-muted-foreground text-sm max-w-xl mx-auto">
+            ClinicalSift is completely free and always will be. If it has helped you or someone you
+            love, consider supporting Alzheimer&apos;s research — or the ongoing development of this tool.
           </p>
+
+          <div className="grid sm:grid-cols-2 gap-6 pt-2 text-left">
+            {/* Research donations */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Donate to Alzheimer&apos;s research
+              </p>
+              {[
+                { name: "Alzheimer's Association", url: "https://www.alz.org/help-support/i-want-to-help/donate", desc: "Largest funder of Alzheimer's research in the US" },
+                { name: "BrightFocus Foundation", url: "https://www.brightfocus.org/alzheimers-disease/donate", desc: "Funds early-career researchers worldwide" },
+                { name: "Alzheimer's Research UK", url: "https://www.alzheimersresearchuk.org/donate/", desc: "Leading dementia research charity in the UK" },
+              ].map((org) => (
+                <a
+                  key={org.name}
+                  href={org.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col gap-0.5 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
+                >
+                  <span className="text-sm font-medium group-hover:text-primary transition-colors">{org.name} →</span>
+                  <span className="text-xs text-muted-foreground">{org.desc}</span>
+                </a>
+              ))}
+            </div>
+
+            {/* Developer support */}
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Support the developer
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ClinicalSift is built and maintained by one person in their spare time.
+                If you&apos;d like to help keep the lights on:
+              </p>
+              <a
+                href="https://github.com/sponsors/notwopr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
+              >
+                <Github className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div>
+                  <span className="text-sm font-medium group-hover:text-primary transition-colors">GitHub Sponsors</span>
+                  <p className="text-xs text-muted-foreground">Monthly or one-time</p>
+                </div>
+              </a>
+              <a
+                href="https://ko-fi.com/notwopr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
+              >
+                <Coffee className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div>
+                  <span className="text-sm font-medium group-hover:text-primary transition-colors">Ko-fi</span>
+                  <p className="text-xs text-muted-foreground">Buy me a coffee</p>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8 px-4 text-center text-xs text-muted-foreground space-y-2">
+        <p>
+          ClinicalSift · Data sourced from{" "}
+          <a href="https://clinicaltrials.gov" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+            ClinicalTrials.gov
           </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+          {" "}· Not affiliated with the NIH, FDA, or any pharmaceutical company
+        </p>
+        <p className="text-muted-foreground/60">
+          Not medical advice · Always consult a qualified healthcare provider before enrolling in any trial
+        </p>
+        <div className="flex items-center justify-center gap-4 pt-1 text-muted-foreground/50">
+          <Link href="/terms" className="hover:text-foreground transition-colors">Terms &amp; Disclaimer</Link>
+          <span>·</span>
+          <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+          <span>·</span>
+          <a href="https://github.com/notwopr/clinicalsift" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+            Open source (MIT)
           </a>
         </div>
-      </main>
+      </footer>
     </div>
   );
 }
