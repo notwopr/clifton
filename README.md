@@ -1,6 +1,9 @@
 # Clifton
 
-![Clifton](public/logo.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/logo-dark.svg">
+  <img alt="Clifton" src="public/logo.svg" width="160">
+</picture>
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
