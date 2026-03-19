@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { UserProfile } from "@/lib/types";
 import { defaultProfile } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,15 @@ interface Props {
 
 export function StepProfile({ profiles, profile, onSwitch, onCreate, onDelete, onChange, onSwitchAndSearch, isLoading }: Props) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [profilesWithResults, setProfilesWithResults] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const withResults = new Set<string>();
+    for (const p of profiles) {
+      if (p.condition && loadTrialSnapshot(p.condition)) withResults.add(p.id);
+    }
+    setProfilesWithResults(withResults);
+  }, [profiles]);
 
   function handleCreate() {
     onCreate(defaultProfile());
@@ -55,7 +64,7 @@ export function StepProfile({ profiles, profile, onSwitch, onCreate, onDelete, o
           <Label>Saved profiles</Label>
           <div className="flex flex-col gap-2">
             {profiles.map((p) => {
-              const hasPriorResults = !!p.condition && !!loadTrialSnapshot(p.condition);
+              const hasPriorResults = profilesWithResults.has(p.id);
               return (
                 <div
                   key={p.id}

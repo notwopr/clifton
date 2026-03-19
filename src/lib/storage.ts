@@ -22,7 +22,8 @@ export function loadAllProfiles(): UserProfile[] {
       return [migrated];
     }
     if (!existing) return [];
-    return JSON.parse(existing) as UserProfile[];
+    const parsed = JSON.parse(existing) as Partial<UserProfile>[];
+    return parsed.map(mergeWithDefaults);
   } catch {
     return [];
   }

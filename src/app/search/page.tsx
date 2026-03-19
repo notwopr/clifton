@@ -48,11 +48,13 @@ export default function SearchPage() {
   const [lastCheckTime, setLastCheckTime] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoChecked = useRef(false);
+  const profileRef = useRef<UserProfile | null>(null);
 
   useEffect(() => {
     const all = loadAllProfiles();
     const active = loadActiveProfile();
     setProfiles(all.length > 0 ? all : [active]);
+    profileRef.current = active;
     setProfile(active);
     if (active.condition) {
       const snap = loadTrialSnapshot(active.condition);
@@ -61,6 +63,7 @@ export default function SearchPage() {
   }, []);
 
   function updateProfile(p: UserProfile) {
+    profileRef.current = p;
     setProfile(p);
     setProfiles((prev) => prev.map((x) => (x.id === p.id ? p : x)));
     saveProfile(p);
@@ -70,6 +73,7 @@ export default function SearchPage() {
   }
 
   function handleSwitch(p: UserProfile) {
+    profileRef.current = p;
     setProfile(p);
     saveActiveProfileId(p.id);
     setView("wizard");
@@ -91,6 +95,7 @@ export default function SearchPage() {
     saveProfile(p);
     saveActiveProfileId(p.id);
     setProfiles((prev) => [...prev, p]);
+    profileRef.current = p;
     setProfile(p);
     setView("wizard");
     setTrials([]);
@@ -102,6 +107,7 @@ export default function SearchPage() {
     const next = deleteProfile(id);
     const all = loadAllProfiles();
     setProfiles(all);
+    profileRef.current = next;
     setProfile(next);
     setView("wizard");
     setTrials([]);
@@ -110,8 +116,8 @@ export default function SearchPage() {
   }
 
   const handleSearch = useCallback(async (overrideProfile?: UserProfile) => {
-    const p = overrideProfile ?? profile;
-    if (!p) return;
+    const p = overrideProfile ?? profileRef.current;
+if (!p) return;
     setIsLoading(true);
     setError(null);
 
@@ -124,13 +130,21 @@ export default function SearchPage() {
         );
       }
 
-      const keywordsStr = p.conditionKeywords.join(", ");
-      const builtQuery = keywordsStr ? `${p.condition}, ${keywordsStr}` : p.condition;
+      const condition = p.condition?.trim() ?? "";
+      if (!condition) {
+        setError("Please enter a condition to search for.");
+        setIsLoading(false);
+        return;
+      }
+
+      const keywords = p.conditionKeywords ?? [];
+      const keywordsStr = keywords.join(", ");
+      const builtQuery = keywordsStr ? `${condition}, ${keywordsStr}` : condition;
       setSearchQuery(builtQuery);
 
       const params = new URLSearchParams({
-        condition: p.condition,
-        keywords: p.conditionKeywords.join(","),
+        condition,
+        keywords: keywords.join(","),
         maxResults: "200",
       });
       const res = await fetch(`/api/trials?${params.toString()}`);
@@ -158,12 +172,13 @@ export default function SearchPage() {
       setTrials(ranked);
       setTotalFromApi(data.totalCount ?? ranked.length);
       setView("results");
+      window.scrollTo({ top: 0, behavior: "instant" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsLoading(false);
     }
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
     if (!profile?.condition || autoChecked.current) return;
@@ -174,7 +189,7 @@ export default function SearchPage() {
       autoChecked.current = true;
       handleSearch();
     }
-  }, [profile, handleSearch]);
+  }, [profile, handleSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!profile) {
     return (

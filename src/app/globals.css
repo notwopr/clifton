@@ -128,6 +128,7 @@
   }
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
   }
   mark {
     background: oklch(0.95 0.12 85);

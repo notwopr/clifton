@@ -124,7 +124,7 @@ export function ProfileWizard({ profiles, profile, onChange, onSwitch, onCreate,
           </div>
         ) : (
           <Button
-            onClick={onSearch}
+            onClick={() => onSearch()}
             disabled={isLoading || !profile.condition.trim()}
             size="lg"
             className="gap-2"

@@ -28,7 +28,7 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
       >
         <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
-          <div className="container max-w-5xl mx-auto px-4 h-32 flex items-center justify-between">
+          <div className="container max-w-5xl mx-auto px-4 h-32 flex items-end pb-3 justify-between">
             <NavLogo />
             <ThemeToggle />
           </div>

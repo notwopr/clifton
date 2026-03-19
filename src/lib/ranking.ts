@@ -82,9 +82,9 @@ function scoreEligibility(
   }
 
   // Comorbidity conflict — check exclusion criteria for mentions of patient's conditions
-  const exclusionText = extracted.exclusionCriteria.join(" ").toLowerCase();
+  const exclusionText = (extracted.exclusionCriteria ?? []).join(" ").toLowerCase();
   const flaggedComorbidities: string[] = [];
-  for (const comorbidity of profile.comorbidities) {
+  for (const comorbidity of (profile.comorbidities ?? [])) {
     const words = comorbidity.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
     if (words.some((w) => exclusionText.includes(w))) {
       flaggedComorbidities.push(comorbidity);
@@ -99,7 +99,7 @@ function scoreEligibility(
 
   // Medication conflict check
   const flaggedMeds: string[] = [];
-  for (const med of profile.currentMedications) {
+  for (const med of (profile.currentMedications ?? [])) {
     const words = med.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
     if (words.some((w) => exclusionText.includes(w))) {
       flaggedMeds.push(med);
@@ -150,7 +150,7 @@ function scoreTreatmentAccess(
 
   // Phase scoring via user preferences
   const key = phaseKey(extracted.phase);
-  const phaseLevel = profile.preferences.phasePreferences?.[key] ?? "ok";
+  const phaseLevel = profile.preferences?.phasePreferences?.[key] ?? "ok";
   if (phaseLevel === "dealbreaker") {
     dealbreakers.push({
       category: "Trial Phase",
@@ -205,7 +205,7 @@ function scorePreferences(
   profile: UserProfile,
   extracted: RankedTrial["extracted"]
 ): { score: number; dimensions: ScoreDimension[]; dealbreakers: DealbreakersTriggered[] } {
-  const prefs = profile.preferences;
+  const prefs = profile.preferences ?? {};
   const dealbreakers: DealbreakersTriggered[] = [];
   const dimensions: ScoreDimension[] = [];
 
@@ -269,7 +269,7 @@ function scorePreferences(
     let worstPenalty = 0;
     let worstMethod = "";
     for (const method of methodsInTrial) {
-      const level = prefs.deliveryPreferences[method] ?? "ok";
+      const level = prefs.deliveryPreferences?.[method] ?? "ok";
       const p = penaltyForLevel(level);
       if (p > worstPenalty) {
         worstPenalty = p;
@@ -307,7 +307,7 @@ function scorePreferences(
     let worstPenalty = 0;
     let worstProc = "";
     for (const proc of procsInTrial) {
-      const level = prefs.procedurePreferences[proc] ?? "ok";
+      const level = prefs.procedurePreferences?.[proc] ?? "ok";
       const p = penaltyForLevel(level);
       if (p > worstPenalty) {
         worstPenalty = p;
@@ -421,15 +421,15 @@ function scorePreferences(
   });
 
   // ── Free-form dealbreakers keyword match ──
-  if (prefs.dealbreakers.trim()) {
+  if (prefs.dealbreakers?.trim()) {
     const userDealbreakers = prefs.dealbreakers
       .split(/[,;\n]+/)
       .map((d) => d.trim())
       .filter(Boolean);
     const trialFullText = [
       extracted.summary,
-      extracted.inclusionCriteria.join(" "),
-      extracted.exclusionCriteria.join(" "),
+      (extracted.inclusionCriteria ?? []).join(" "),
+      (extracted.exclusionCriteria ?? []).join(" "),
     ].join(" ");
     for (const kw of userDealbreakers) {
       if (textContainsAny(trialFullText, [kw])) {
@@ -443,14 +443,14 @@ function scorePreferences(
 
   // ── Free-form must-have keyword match (penalise if absent) ──
   let mustHaveScore = 100;
-  if (prefs.mustHave.trim()) {
+  if (prefs.mustHave?.trim()) {
     const mustHaves = prefs.mustHave
       .split(/[,;\n]+/)
       .map((d) => d.trim())
       .filter(Boolean);
     const trialFullText = [
       extracted.summary,
-      extracted.inclusionCriteria.join(" "),
+      (extracted.inclusionCriteria ?? []).join(" "),
     ].join(" ");
     const missingCount = mustHaves.filter(
       (kw) => !textContainsAny(trialFullText, [kw])
@@ -486,7 +486,8 @@ export async function rankTrials(
     Object.assign(s, { _userCondition: profile.condition })
   );
 
-  const ranked: RankedTrial[] = taggedStudies.map((study) => {
+  const ranked: RankedTrial[] = taggedStudies.flatMap((study) => {
+    try {
     const extracted = extractTrialData(study, userCoords);
 
     const eligResult = scoreEligibility(profile, extracted);
@@ -497,7 +498,7 @@ export async function rankTrials(
     // These are almost certainly off-topic (CTG matched on description only).
     // Move them to the excluded section so they don't pollute ranked results.
     // score 0.5 = found in title but not conditions list — warn, score down, keep visible.
-    if (profile.condition.trim()) {
+    if (profile.condition?.trim()) {
       const condName = extracted.conditions[0] ?? "a different condition";
       if (extracted.conditionRelevanceScore === 0) {
         prefResult.dealbreakers.push({
@@ -531,7 +532,7 @@ export async function rankTrials(
               prefResult.score * W_PREFERENCE
           );
 
-    return {
+    return [{
       study,
       extracted,
       scores: {
@@ -546,7 +547,11 @@ export async function rankTrials(
         ...prefResult.dimensions,
       ],
       dealbreakersTriggered: allDealbreakers,
-    };
+    }];
+    } catch (err) {
+      console.error("Failed to rank trial", (study as CTGStudy).protocolSection?.identificationModule?.nctId, err);
+      return [];
+    }
   });
 
   // Sort: non-dealbreakers first (by composite desc), then dealbreakers (by eligibility desc)
