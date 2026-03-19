@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -64,6 +64,20 @@ function TriToggle({
   );
 }
 
+function PrefCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">{title}</h3>
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function StepPreferences({ prefs, onChange }: Props) {
   function updateDelivery(method: DeliveryMethod, level: PreferenceLevel) {
     onChange({ deliveryPreferences: { ...prefs.deliveryPreferences, [method]: level } });
@@ -76,7 +90,7 @@ export function StepPreferences({ prefs, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">Your preferences</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -85,12 +99,8 @@ export function StepPreferences({ prefs, onChange }: Props) {
         </p>
       </div>
 
-      {/* ── Travel ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Travel & Location
-        </h3>
-
+      {/* ── Travel & Location ── */}
+      <PrefCard title="Travel & Location">
         <div className="space-y-2">
           <Label>
             How far are you willing to drive to a trial site? (one-way miles)
@@ -131,9 +141,7 @@ export function StepPreferences({ prefs, onChange }: Props) {
         <div className="flex items-center justify-between">
           <div>
             <Label>US sites only</Label>
-            <p className="text-xs text-muted-foreground">
-              Filter out trials with no US locations
-            </p>
+            <p className="text-xs text-muted-foreground">Filter out trials with no US locations</p>
           </div>
           <Switch
             checked={prefs.usOnly}
@@ -153,12 +161,44 @@ export function StepPreferences({ prefs, onChange }: Props) {
             onCheckedChange={(v) => onChange({ telehealthAcceptable: v })}
           />
         </div>
+      </PrefCard>
+
+      {/* ── Time Commitment ── */}
+      <PrefCard title="Time Commitment">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="maxDuration">Max trial duration (months)</Label>
+            <Input
+              id="maxDuration"
+              type="number"
+              min={1}
+              value={prefs.maxTrialDurationMonths === "" ? "" : String(prefs.maxTrialDurationMonths)}
+              onChange={(e) =>
+                onChange({ maxTrialDurationMonths: e.target.value === "" ? "" : parseInt(e.target.value, 10) })
+              }
+              placeholder="No limit"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxVisitHours">Max hours per visit</Label>
+            <Input
+              id="maxVisitHours"
+              type="number"
+              min={0.5}
+              step={0.5}
+              value={prefs.maxVisitHours === "" ? "" : String(prefs.maxVisitHours)}
+              onChange={(e) =>
+                onChange({ maxVisitHours: e.target.value === "" ? "" : parseFloat(e.target.value) })
+              }
+              placeholder="No limit"
+            />
+          </div>
+        </div>
 
         <div className="space-y-1">
           <Label htmlFor="maxVisits">Maximum visits per month you can commit to</Label>
           <p className="text-xs text-muted-foreground">
-            Leave blank for no limit. This captures your personal capacity — how many
-            trips to a trial site per month is realistic for you regardless of distance.
+            Leave blank for no limit. How many trips to a trial site per month is realistic for you.
           </p>
           <Input
             id="maxVisits"
@@ -166,99 +206,16 @@ export function StepPreferences({ prefs, onChange }: Props) {
             min={0}
             value={prefs.maxVisitsPerMonth === "" ? "" : String(prefs.maxVisitsPerMonth)}
             onChange={(e) =>
-              onChange({
-                maxVisitsPerMonth:
-                  e.target.value === "" ? "" : parseInt(e.target.value, 10),
-              })
+              onChange({ maxVisitsPerMonth: e.target.value === "" ? "" : parseInt(e.target.value, 10) })
             }
             placeholder="No limit"
             className="w-32"
           />
         </div>
-      </section>
+      </PrefCard>
 
-      <Separator />
-
-      {/* ── Trial phase ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Trial Phase
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Later phases are generally safer and closer to real-world use, but earlier phases
-          may test more novel approaches. Mark any you want to exclude.
-        </p>
-        <div className="space-y-2">
-          {(Object.entries(PHASE_LABELS) as [TrialPhase, string][]).map(([phase, label]) => (
-            <div key={phase} className="flex items-center justify-between gap-4">
-              <span className="text-sm">{label}</span>
-              <TriToggle
-                value={prefs.phasePreferences?.[phase] ?? "ok"}
-                onChange={(v) => updatePhase(phase, v)}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ── Treatment delivery ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Treatment Delivery
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          How are you OK with the drug or therapy being administered?
-        </p>
-        <div className="space-y-2">
-          {(Object.entries(DELIVERY_METHOD_LABELS) as [DeliveryMethod, string][]).map(
-            ([method, label]) => (
-              <div key={method} className="flex items-center justify-between gap-4">
-                <span className="text-sm">{label}</span>
-                <TriToggle
-                  value={prefs.deliveryPreferences[method] ?? "ok"}
-                  onChange={(v) => updateDelivery(method, v)}
-                />
-              </div>
-            )
-          )}
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ── Procedures ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Procedures & Testing Burden
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Mark any procedures you want to avoid.
-        </p>
-        <div className="space-y-2">
-          {(Object.entries(PROCEDURE_LABELS) as [ProcedureType, string][]).map(
-            ([proc, label]) => (
-              <div key={proc} className="flex items-center justify-between gap-4">
-                <span className="text-sm">{label}</span>
-                <TriToggle
-                  value={prefs.procedurePreferences[proc] ?? "ok"}
-                  onChange={(v) => updateProcedure(proc, v)}
-                />
-              </div>
-            )
-          )}
-        </div>
-      </section>
-
-      <Separator />
-
-      {/* ── Placebo ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Placebo & Treatment Odds
-        </h3>
-
+      {/* ── Placebo & Treatment Odds ── */}
+      <PrefCard title="Placebo & Treatment Odds">
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm">Willing to be in a placebo arm</span>
           <Select
@@ -293,68 +250,66 @@ export function StepPreferences({ prefs, onChange }: Props) {
           <p className="text-xs text-muted-foreground">
             Leave at 0% to show all trials. A 1:1 randomized trial = 50% get the drug.
             A 2:1 trial = 67%. Open-label = 100% (everyone gets the treatment).
-            Set to e.g. 50% if you want to exclude trials where most participants receive placebo.
           </p>
         </div>
-      </section>
+      </PrefCard>
 
-      <Separator />
-
-      {/* ── Time commitment ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Time Commitment
-        </h3>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="maxDuration">Max trial duration (months)</Label>
-            <Input
-              id="maxDuration"
-              type="number"
-              min={1}
-              value={
-                prefs.maxTrialDurationMonths === ""
-                  ? ""
-                  : String(prefs.maxTrialDurationMonths)
-              }
-              onChange={(e) =>
-                onChange({
-                  maxTrialDurationMonths:
-                    e.target.value === "" ? "" : parseInt(e.target.value, 10),
-                })
-              }
-              placeholder="No limit"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxVisitHours">Max hours per visit</Label>
-            <Input
-              id="maxVisitHours"
-              type="number"
-              min={0.5}
-              step={0.5}
-              value={prefs.maxVisitHours === "" ? "" : String(prefs.maxVisitHours)}
-              onChange={(e) =>
-                onChange({
-                  maxVisitHours:
-                    e.target.value === "" ? "" : parseFloat(e.target.value),
-                })
-              }
-              placeholder="No limit"
-            />
-          </div>
+      {/* ── Trial Phase ── */}
+      <PrefCard
+        title="Trial Phase"
+        description="Later phases are generally safer and closer to real-world use, but earlier phases may test more novel approaches."
+      >
+        <div className="space-y-2">
+          {(Object.entries(PHASE_LABELS) as [TrialPhase, string][]).map(([phase, label]) => (
+            <div key={phase} className="flex items-center justify-between gap-4">
+              <span className="text-sm">{label}</span>
+              <TriToggle
+                value={prefs.phasePreferences?.[phase] ?? "ok"}
+                onChange={(v) => updatePhase(phase, v)}
+              />
+            </div>
+          ))}
         </div>
-      </section>
+      </PrefCard>
 
-      <Separator />
+      {/* ── Treatment Delivery ── */}
+      <PrefCard
+        title="Treatment Delivery"
+        description="How are you OK with the drug or therapy being administered?"
+      >
+        <div className="space-y-2">
+          {(Object.entries(DELIVERY_METHOD_LABELS) as [DeliveryMethod, string][]).map(([method, label]) => (
+            <div key={method} className="flex items-center justify-between gap-4">
+              <span className="text-sm">{label}</span>
+              <TriToggle
+                value={prefs.deliveryPreferences[method] ?? "ok"}
+                onChange={(v) => updateDelivery(method, v)}
+              />
+            </div>
+          ))}
+        </div>
+      </PrefCard>
+
+      {/* ── Procedures ── */}
+      <PrefCard
+        title="Procedures & Testing Burden"
+        description="Mark any procedures you want to avoid."
+      >
+        <div className="space-y-2">
+          {(Object.entries(PROCEDURE_LABELS) as [ProcedureType, string][]).map(([proc, label]) => (
+            <div key={proc} className="flex items-center justify-between gap-4">
+              <span className="text-sm">{label}</span>
+              <TriToggle
+                value={prefs.procedurePreferences[proc] ?? "ok"}
+                onChange={(v) => updateProcedure(proc, v)}
+              />
+            </div>
+          ))}
+        </div>
+      </PrefCard>
 
       {/* ── Free-form ── */}
-      <section className="space-y-4">
-        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-          Anything Else
-        </h3>
-
+      <PrefCard title="Anything Else">
         <div className="space-y-2">
           <Label htmlFor="mustHave">Must have (critical requirements)</Label>
           <Textarea
@@ -393,7 +348,7 @@ export function StepPreferences({ prefs, onChange }: Props) {
             Comma or newline separated. Trials mentioning these keywords will score zero.
           </p>
         </div>
-      </section>
+      </PrefCard>
     </div>
   );
 }

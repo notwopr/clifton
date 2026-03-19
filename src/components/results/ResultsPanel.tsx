@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, CheckCircle, Search, Download, ExternalLink, Printer, Clipboard, ClipboardCheck, Bell, X } from "lucide-react";
+import { AlertTriangle, CheckCircle, Search, Download, ExternalLink, Printer, Clipboard, ClipboardCheck, Bell, X, Star, Sparkles } from "lucide-react";
 
 interface Props {
   trials: RankedTrial[];
@@ -24,6 +24,8 @@ interface Props {
   newNctIds: Set<string>;
   lastSearchedAt: string | null;
   currentSearchedAt: string | null;
+  starredNctIds: string[];
+  onToggleStar: (nctId: string) => void;
   onRefine: () => void;
 }
 
@@ -140,24 +142,19 @@ function buildPrintHtml(favTrials: RankedTrial[], conditionLabel: string): strin
   </body></html>`;
 }
 
-export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery, newNctIds, lastSearchedAt, currentSearchedAt, onRefine }: Props) {
+export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery, newNctIds, lastSearchedAt, currentSearchedAt, starredNctIds, onToggleStar, onRefine }: Props) {
   const [showExcluded, setShowExcluded] = useState(false);
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
+  const [showNewOnly, setShowNewOnly] = useState(false);
   const [search, setSearch] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("all");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
 
-  function toggleFavorite(nctId: string) {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      next.has(nctId) ? next.delete(nctId) : next.add(nctId);
-      return next;
-    });
-  }
+  const favorites = new Set(starredNctIds);
 
   // Shared: build the action plan as a list of text lines
   const buildActionPlanLines = useCallback((): string[] => {
-    const favTrials = trials.filter((t) => favorites.has(t.extracted.nctId));
+    const favTrials = trials.filter((t) => starredNctIds.includes(t.extracted.nctId));
     const lines: string[] = [
       `Clinical Trial Action Plan — ${conditionLabel}`,
       `Generated: ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
@@ -213,7 +210,7 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
       lines.push(``);
     });
     return lines;
-  }, [trials, favorites, conditionLabel]);
+  }, [trials, starredNctIds, conditionLabel]);
 
   function exportTxt() {
     const lines = buildActionPlanLines();
@@ -234,7 +231,7 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
   }
 
   function printActionPlan() {
-    const favTrials = trials.filter((t) => favorites.has(t.extracted.nctId));
+    const favTrials = trials.filter((t) => starredNctIds.includes(t.extracted.nctId));
     if (favTrials.length === 0) return;
     const html = buildPrintHtml(favTrials, conditionLabel);
     const w = window.open("", "_blank");
@@ -276,8 +273,8 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
     return t.extracted.phase.toLowerCase().includes(phaseFilter.toLowerCase());
   }
 
-  const filteredQ = qualified.filter((t) => matchesSearch(t) && matchesPhase(t));
-  const filteredDQ = disqualified.filter((t) => matchesSearch(t) && matchesPhase(t));
+  const filteredQ = qualified.filter((t) => matchesSearch(t) && matchesPhase(t) && (!showStarredOnly || favorites.has(t.extracted.nctId)) && (!showNewOnly || newNctIds.has(t.extracted.nctId)));
+  const filteredDQ = disqualified.filter((t) => matchesSearch(t) && matchesPhase(t) && (!showStarredOnly || favorites.has(t.extracted.nctId)) && (!showNewOnly || newNctIds.has(t.extracted.nctId)));
   // Auto-expand excluded when a search query is active and has matches there
   const effectiveShowExcluded = showExcluded || (search.trim().length > 0 && filteredDQ.length > 0);
 
@@ -339,9 +336,6 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
           Verify on ClinicalTrials.gov
           <ExternalLink className="h-3 w-3" />
         </a>
-        <span className="text-muted-foreground/70">
-          · If you notice missing trials, add synonyms in Step 1 (e.g. &ldquo;AD, dementia&rdquo;)
-        </span>
       </div>
 
       {newNctIds.size > 0 && lastSearchedAt && (
@@ -387,6 +381,26 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
             <SelectItem value="4">Phase 4</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant={showStarredOnly ? "default" : "outline"}
+          size="sm"
+          className="h-9 gap-1.5 shrink-0"
+          onClick={() => setShowStarredOnly((s) => !s)}
+        >
+          <Star className={`h-3.5 w-3.5 ${showStarredOnly ? "fill-current" : ""}`} />
+          Starred{favorites.size > 0 ? ` (${favorites.size})` : ""}
+        </Button>
+        {newNctIds.size > 0 && (
+          <Button
+            variant={showNewOnly ? "default" : "outline"}
+            size="sm"
+            className="h-9 gap-1.5 shrink-0"
+            onClick={() => setShowNewOnly((s) => !s)}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            New ({newNctIds.size})
+          </Button>
+        )}
       </div>
 
       {/* Qualified results */}
@@ -399,7 +413,7 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
           {filteredQ.map((trial, i) => (
             <TrialCard key={trial.extracted.nctId} trial={trial} rank={i + 1}
               isFavorited={favorites.has(trial.extracted.nctId)}
-              onToggleFavorite={toggleFavorite}
+              onToggleFavorite={onToggleStar}
               isNew={newNctIds.has(trial.extracted.nctId)}
               searchQuery={search} />
           ))}
@@ -407,13 +421,25 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
       ) : (
         <div className="text-center py-12 text-muted-foreground">
           <Search className="h-8 w-8 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No trials match your current preferences</p>
-          <p className="text-sm mt-1">
-            Try relaxing some dealbreakers or expanding your search radius.
-          </p>
-          <Button variant="outline" className="mt-4" onClick={onRefine}>
-            Adjust Preferences
-          </Button>
+          {showStarredOnly && favorites.size === 0 ? (
+            <>
+              <p className="font-medium">No starred trials yet</p>
+              <p className="text-sm mt-1">Click the star on any trial to save it here.</p>
+              <Button variant="outline" className="mt-4" onClick={() => setShowStarredOnly(false)}>
+                Show all trials
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="font-medium">No trials match your current filters</p>
+              <p className="text-sm mt-1">
+                {showStarredOnly ? "None of your starred trials match these filters." : "Try relaxing some dealbreakers or expanding your search radius."}
+              </p>
+              <Button variant="outline" className="mt-4" onClick={showStarredOnly ? () => setShowStarredOnly(false) : onRefine}>
+                {showStarredOnly ? "Show all trials" : "Adjust Preferences"}
+              </Button>
+            </>
+          )}
         </div>
       )}
 
@@ -445,7 +471,7 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
                   trial={trial}
                   rank={qualified.length + i + 1}
                   isFavorited={favorites.has(trial.extracted.nctId)}
-                  onToggleFavorite={toggleFavorite}
+                  onToggleFavorite={onToggleStar}
                   isNew={newNctIds.has(trial.extracted.nctId)}
                   searchQuery={search}
                 />

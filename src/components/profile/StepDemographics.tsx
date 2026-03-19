@@ -49,7 +49,9 @@ export function StepDemographics({ profile, onChange }: Props) {
             onValueChange={(v) => v && onChange({ sex: v as UserProfile["sex"] })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select…" />
+              <SelectValue placeholder="Select…">
+                {profile.sex === "female" ? "Female" : profile.sex === "male" ? "Male" : profile.sex === "other" ? "Other" : null}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="female">Female</SelectItem>
@@ -81,7 +83,9 @@ export function StepDemographics({ profile, onChange }: Props) {
             onValueChange={(v) => v && onChange({ country: v })}
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue>
+                {{ US: "United States", CA: "Canada", GB: "United Kingdom", AU: "Australia", DE: "Germany", FR: "France", other: "Other" }[profile.country] ?? null}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="US">United States</SelectItem>

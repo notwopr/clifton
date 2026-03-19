@@ -25,8 +25,8 @@ export default function Home() {
       <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/30">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-10 sm:gap-16">
           {/* Logo */}
-          <div className="shrink-0">
-            <img src="/logo.svg" alt="Clifton" className="h-96 sm:h-[32rem] w-auto dark:invert" />
+          <div className="shrink-0 rounded-3xl p-6 bg-transparent dark:bg-white">
+            <img src="/logo.svg" alt="Clifton" className="h-96 sm:h-[32rem] w-auto" />
           </div>
 
           {/* Text */}
@@ -35,15 +35,20 @@ export default function Home() {
               Free · No account required · Your data stays on your device
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
-              Find the right clinical trial.{" "}
-              <span className="text-primary">Automatically ranked for you.</span>
-            </h1>
+            <div>
+              <p className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-1">
+                Meet Clifton — the <strong className="text-foreground"><u>cli</u></strong>nical trial si<strong className="text-foreground"><u>ft</u></strong>ing walrus.
+              </p>
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
+                He finds the right trial.{" "}
+                <span className="text-primary">Ranked for you, automatically.</span>
+              </h1>
+            </div>
 
             <p className="text-lg text-muted-foreground">
-              Stop manually sifting through clinicaltrials.gov. Enter the patient&apos;s profile
-              once — Clifton ranks every recruiting trial by eligibility and your preferences,
-              and makes it easy to share top picks with family or your doctor.
+              Tell Clifton about the patient — age, history, preferences — and he&apos;ll sift
+              through every recruiting trial on ClinicalTrials.gov and rank them by fit.
+              No more hours of manual searching.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
@@ -72,7 +77,7 @@ export default function Home() {
             {
               icon: <FlaskConical className="h-6 w-6 text-primary" />,
               title: "2. We search ClinicalTrials.gov",
-              desc: "Every actively recruiting trial for your condition is fetched in real time. No stale spreadsheets. Trials added today appear today.",
+              desc: "Every actively recruiting interventional trial for your condition is fetched in real time from ClinicalTrials.gov. No stale spreadsheets. Trials added today appear today.",
             },
             {
               icon: <SortDesc className="h-6 w-6 text-primary" />,

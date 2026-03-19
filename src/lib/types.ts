@@ -1,6 +1,7 @@
 // ─── User Profile ────────────────────────────────────────────────────────────
 
 export interface UserProfile {
+  id: string; // unique identifier
   label: string; // e.g. "Mom - Alzheimer's"
 
   // Step 1 – Condition
@@ -18,6 +19,14 @@ export interface UserProfile {
   currentMedications: string[]; // free-text entries
   recentProcedures: string[]; // e.g. "brain surgery 6 months ago"
   notes: string; // disease stage, functional scores, mobility limitations, etc.
+
+  // Starred trials — keyed by condition (lowercase) so stars don't bleed across different searches
+  starredTrials: Record<string, string[]>;
+
+  // Medication stability for the target condition
+  onConditionMedication: boolean | null; // taking meds specifically for the searched condition
+  conditionMedicationStable: boolean | null; // dose/plan unchanged
+  conditionMedicationStableDuration: "lt1m" | "1to3m" | "3to6m" | "6plus" | null;
 
   // Step 4 – Preferences
   preferences: UserPreferences;
@@ -335,9 +344,14 @@ export function defaultPreferences(): UserPreferences {
   };
 }
 
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
 export function defaultProfile(): UserProfile {
   return {
-    label: "My Profile",
+    id: generateId(),
+    label: "",
     condition: "",
     conditionKeywords: [],
     age: "",
@@ -348,6 +362,10 @@ export function defaultProfile(): UserProfile {
     currentMedications: [],
     recentProcedures: [],
     notes: "",
+    starredTrials: {},
+    onConditionMedication: null,
+    conditionMedicationStable: null,
+    conditionMedicationStableDuration: null,
     preferences: defaultPreferences(),
   };
 }

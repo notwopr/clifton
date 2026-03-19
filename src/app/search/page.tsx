@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { UserProfile, RankedTrial } from "@/lib/types";
-import { loadProfile, saveProfile, saveTrialSnapshot, loadTrialSnapshot } from "@/lib/storage";
+import {
+  loadActiveProfile,
+  loadAllProfiles,
+  saveProfile,
+  saveActiveProfileId,
+  deleteProfile,
+  saveTrialSnapshot,
+  loadTrialSnapshot,
+} from "@/lib/storage";
 import { rankTrials } from "@/lib/ranking";
 import { resolveZip } from "@/lib/eligibility";
 import { ProfileWizard } from "@/components/profile/ProfileWizard";
@@ -11,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 type View = "wizard" | "results";
 
-const AUTO_CHECK_HOURS = 24 * 7; // 1 week — clinical trials don't update that frequently
+const AUTO_CHECK_HOURS = 24 * 7;
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -25,6 +33,7 @@ function timeAgo(isoString: string): string {
 }
 
 export default function SearchPage() {
+  const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [view, setView] = useState<View>("wizard");
   const [trials, setTrials] = useState<RankedTrial[]>([]);
@@ -40,50 +49,88 @@ export default function SearchPage() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoChecked = useRef(false);
 
-  // Load profile from localStorage on mount, and read last check time
   useEffect(() => {
-    const p = loadProfile();
-    setProfile(p);
-    if (p.condition) {
-      const snap = loadTrialSnapshot(p.condition);
+    const all = loadAllProfiles();
+    const active = loadActiveProfile();
+    setProfiles(all.length > 0 ? all : [active]);
+    setProfile(active);
+    if (active.condition) {
+      const snap = loadTrialSnapshot(active.condition);
       if (snap) setLastCheckTime(snap.searchedAt);
     }
   }, []);
 
-  // Persist profile changes and flash "Saved" indicator
   function updateProfile(p: UserProfile) {
     setProfile(p);
+    setProfiles((prev) => prev.map((x) => (x.id === p.id ? p : x)));
     saveProfile(p);
     setSavedFlash(true);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => setSavedFlash(false), 2000);
   }
 
-  const handleSearch = useCallback(async () => {
-    if (!profile) return;
+  function handleSwitch(p: UserProfile) {
+    setProfile(p);
+    saveActiveProfileId(p.id);
+    setView("wizard");
+    setTrials([]);
+    autoChecked.current = false;
+    const snap = loadTrialSnapshot(p.condition);
+    setLastCheckTime(snap?.searchedAt ?? null);
+  }
+
+  function handleSwitchAndSearch(p: UserProfile) {
+    setProfile(p);
+    saveActiveProfileId(p.id);
+    setTrials([]);
+    autoChecked.current = false;
+    handleSearch(p);
+  }
+
+  function handleCreate(p: UserProfile) {
+    saveProfile(p);
+    saveActiveProfileId(p.id);
+    setProfiles((prev) => [...prev, p]);
+    setProfile(p);
+    setView("wizard");
+    setTrials([]);
+    autoChecked.current = false;
+    setLastCheckTime(null);
+  }
+
+  function handleDelete(id: string) {
+    const next = deleteProfile(id);
+    const all = loadAllProfiles();
+    setProfiles(all);
+    setProfile(next);
+    setView("wizard");
+    setTrials([]);
+    autoChecked.current = false;
+    setLastCheckTime(next.condition ? loadTrialSnapshot(next.condition)?.searchedAt ?? null : null);
+  }
+
+  const handleSearch = useCallback(async (overrideProfile?: UserProfile) => {
+    const p = overrideProfile ?? profile;
+    if (!p) return;
     setIsLoading(true);
     setError(null);
 
     try {
-      // Resolve zip to coordinates for distance calculation
       let userCoords: { lat: number; lon: number } | null = null;
-      if (profile.zipCode && profile.country) {
+      if (p.zipCode && p.country) {
         userCoords = await resolveZip(
-          profile.zipCode,
-          profile.country === "other" ? "us" : profile.country.toLowerCase()
+          p.zipCode,
+          p.country === "other" ? "us" : p.country.toLowerCase()
         );
       }
 
-      // Fetch trials from our API route (which proxies ClinicalTrials.gov)
-      const keywordsStr = profile.conditionKeywords.join(", ");
-      const builtQuery = keywordsStr
-        ? `${profile.condition}, ${keywordsStr}`
-        : profile.condition;
+      const keywordsStr = p.conditionKeywords.join(", ");
+      const builtQuery = keywordsStr ? `${p.condition}, ${keywordsStr}` : p.condition;
       setSearchQuery(builtQuery);
 
       const params = new URLSearchParams({
-        condition: profile.condition,
-        keywords: profile.conditionKeywords.join(","),
+        condition: p.condition,
+        keywords: p.conditionKeywords.join(","),
         maxResults: "200",
       });
       const res = await fetch(`/api/trials?${params.toString()}`);
@@ -93,27 +140,21 @@ export default function SearchPage() {
       }
       const data = await res.json();
 
-      // Rank results
-      const ranked = await rankTrials(data.studies ?? [], profile, userCoords);
-
-      // Compare to previous snapshot to detect new trials
+      const ranked = await rankTrials(data.studies ?? [], p, userCoords);
       const allCurrentIds = ranked.map((t) => t.extracted.nctId);
-      const prevSnapshot = loadTrialSnapshot(profile.condition);
+      const prevSnapshot = loadTrialSnapshot(p.condition);
       if (prevSnapshot) {
         const prevIds = new Set(prevSnapshot.nctIds);
-        const newIds = new Set(allCurrentIds.filter((id) => !prevIds.has(id)));
-        setNewNctIds(newIds);
+        setNewNctIds(new Set(allCurrentIds.filter((id) => !prevIds.has(id))));
         setLastSearchedAt(prevSnapshot.searchedAt);
       } else {
         setNewNctIds(new Set());
         setLastSearchedAt(null);
       }
-      // Save the new snapshot
-      saveTrialSnapshot(profile.condition, allCurrentIds);
+      saveTrialSnapshot(p.condition, allCurrentIds);
       const now = new Date().toISOString();
       setCurrentSearchedAt(now);
       setLastCheckTime(now);
-
       setTrials(ranked);
       setTotalFromApi(data.totalCount ?? ranked.length);
       setView("results");
@@ -124,7 +165,6 @@ export default function SearchPage() {
     }
   }, [profile]);
 
-  // Auto-check on load if last snapshot is stale (runs after handleSearch is defined)
   useEffect(() => {
     if (!profile?.condition || autoChecked.current) return;
     const snap = loadTrialSnapshot(profile.condition);
@@ -147,32 +187,33 @@ export default function SearchPage() {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       {view === "wizard" ? (
-        <div className="max-w-2xl mx-auto">
-          <div className="flex justify-between items-center mb-2 h-5">
-            {lastCheckTime && !savedFlash && (
-              <span className="text-xs text-muted-foreground">
-                Last checked: {timeAgo(lastCheckTime)}
-              </span>
-            )}
-            {savedFlash && (
-              <span className="text-xs text-muted-foreground animate-in fade-in">
-                ✓ Profile auto-saved to your browser
-              </span>
-            )}
-            {!lastCheckTime && !savedFlash && <span />}
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="h-5 flex items-center justify-end">
+            {savedFlash ? (
+              <span className="text-xs text-muted-foreground animate-in fade-in">✓ Saved</span>
+            ) : lastCheckTime ? (
+              <span className="text-xs text-muted-foreground">Last checked: {timeAgo(lastCheckTime)}</span>
+            ) : null}
           </div>
+
           <Card>
             <CardContent className="pt-6">
               <ProfileWizard
+                profiles={profiles}
                 profile={profile}
                 onChange={updateProfile}
+                onSwitch={handleSwitch}
+                onCreate={handleCreate}
+                onDelete={handleDelete}
                 onSearch={handleSearch}
+                onSwitchAndSearch={handleSwitchAndSearch}
                 isLoading={isLoading}
               />
             </CardContent>
           </Card>
+
           {error && (
-            <div className="mt-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md">
+            <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md">
               {error}
             </div>
           )}
@@ -186,6 +227,15 @@ export default function SearchPage() {
           newNctIds={newNctIds}
           lastSearchedAt={lastSearchedAt}
           currentSearchedAt={currentSearchedAt}
+          starredNctIds={profile.starredTrials?.[profile.condition.toLowerCase().trim()] ?? []}
+          onToggleStar={(nctId) => {
+            const conditionKey = profile.condition.toLowerCase().trim();
+            const current = profile.starredTrials?.[conditionKey] ?? [];
+            const next = current.includes(nctId)
+              ? current.filter((id) => id !== nctId)
+              : [...current, nctId];
+            updateProfile({ ...profile, starredTrials: { ...profile.starredTrials, [conditionKey]: next } });
+          }}
           onRefine={() => setView("wizard")}
         />
       )}

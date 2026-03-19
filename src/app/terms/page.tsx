@@ -28,7 +28,9 @@ export default function TermsPage() {
         <p className="text-muted-foreground">
           Clifton fetches publicly available clinical trial data from ClinicalTrials.gov and
           applies a scoring algorithm to sort and rank trials based on the profile information you
-          enter. It is a convenience tool — the same information is freely available at{" "}
+          enter. It searches <strong>interventional trials only</strong> — observational studies,
+          registries, and expanded access programs are excluded. It is a convenience tool — the
+          same information is freely available at{" "}
           <a href="https://clinicaltrials.gov" target="_blank" rel="noopener noreferrer" className="underline">
             clinicaltrials.gov
           </a>.

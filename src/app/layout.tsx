@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { NavLogo } from "@/components/NavLogo";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -27,11 +28,8 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
       >
         <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
-          <div className="container max-w-5xl mx-auto px-4 h-20 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <img src="/logo.svg" alt="Clifton" className="h-14 w-auto dark:invert" />
-              <span className="font-bold text-3xl tracking-tight">Clifton</span>
-            </Link>
+          <div className="container max-w-5xl mx-auto px-4 h-32 flex items-center justify-between">
+            <NavLogo />
             <ThemeToggle />
           </div>
         </header>

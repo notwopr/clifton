@@ -3,7 +3,6 @@
 import type { UserProfile } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TagInput } from "./TagInput";
 
 interface Props {
   profile: UserProfile;
@@ -31,34 +30,12 @@ export function StepCondition({ profile, onChange }: Props) {
           autoFocus
           spellCheck
         />
-        <p className="text-xs text-muted-foreground">
-          Spell it as it appears on ClinicalTrials.gov — e.g. "Alzheimer Disease" (no apostrophe-s) is the
-          official term used there. If unsure, use common synonyms in the keywords field below.
-        </p>
       </div>
 
-      <div className="space-y-2">
-        <Label>Synonyms & related terms (optional but recommended)</Label>
-        <TagInput
-          values={profile.conditionKeywords}
-          onChange={(v) => onChange({ conditionKeywords: v })}
-          placeholder="e.g. AD, dementia, amyloid, tau, MCI, mild cognitive impairment"
-          label="Add abbreviations, alternate spellings, and subtypes — broadens the search and catches trials you'd otherwise miss"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="label">Profile name</Label>
-        <Input
-          id="label"
-          value={profile.label}
-          onChange={(e) => onChange({ label: e.target.value })}
-          placeholder="e.g. Mom - Alzheimer's"
-        />
-        <p className="text-xs text-muted-foreground">
-          Saved locally in your browser so your profile reloads automatically next visit.
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Searching for a different person or condition? Go back to the <strong>Profile</strong> step and create a new profile —
+        each one keeps its own settings and starred trials separately.
+      </p>
     </div>
   );
 }
