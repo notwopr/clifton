@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeRandomizer } from "@/components/ThemeRandomizer";
 import { NavLogo } from "@/components/NavLogo";
 
 const inter = Inter({
@@ -30,7 +31,10 @@ export default function RootLayout({
         <header className="border-b sticky top-0 z-50 bg-background/95 backdrop-blur">
           <div className="container max-w-5xl mx-auto px-4 h-32 flex items-end pb-3 justify-between">
             <NavLogo />
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeRandomizer />
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         {children}
