@@ -215,7 +215,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
       )}
     >
       {/* ── Collapsed header ─────────────────────────────────────────────────── */}
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 cursor-pointer select-none" onClick={() => setExpanded(e => !e)}>
         <div className="flex items-start gap-3">
 
           {/* Rank + composite score + eligibility status */}
@@ -348,7 +348,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onToggleFavorite(extracted.nctId)}
+                onClick={(e) => { e.stopPropagation(); onToggleFavorite(extracted.nctId); }}
                 className={cn("h-7 px-2", isFavorited ? "text-yellow-500" : "text-muted-foreground")}
                 title={isFavorited ? "Remove from shortlist" : "Add to shortlist"}
               >
@@ -358,7 +358,7 @@ export function TrialCard({ trial, rank, isFavorited, onToggleFavorite, isNew, s
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setExpanded(e => !e)}
+              onClick={(e) => { e.stopPropagation(); setExpanded(ex => !ex); }}
               className="h-7 px-2"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

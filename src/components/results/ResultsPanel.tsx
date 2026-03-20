@@ -149,20 +149,33 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
   const [search, setSearch] = useState("");
   const [phaseFilter, setPhaseFilter] = useState("all");
   const [copied, setCopied] = useState(false);
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const [exportScope, setExportScope] = useState<"starred" | "eligible" | "new-eligible" | "all">("starred");
 
   const favorites = new Set(starredNctIds);
+  const starredInResults = trials.filter(t => favorites.has(t.extracted.nctId)).length;
 
-  // Shared: build the action plan as a list of text lines
-  const buildActionPlanLines = useCallback((): string[] => {
-    const favTrials = trials.filter((t) => starredNctIds.includes(t.extracted.nctId));
+  // ── Export helpers ────────────────────────────────────────────────────────
+
+  const exportTrialsList: RankedTrial[] = (() => {
+    switch (exportScope) {
+      case "starred":     return trials.filter(t => favorites.has(t.extracted.nctId));
+      case "eligible":    return trials.filter(t => t.dealbreakersTriggered.length === 0);
+      case "new-eligible":return trials.filter(t => newNctIds.has(t.extracted.nctId) && t.dealbreakersTriggered.length === 0);
+      case "all":         return [...trials];
+    }
+  })();
+  const exportScopeCount = exportTrialsList.length;
+
+  const buildActionPlanLines = useCallback((exportTrials: RankedTrial[]): string[] => {
     const lines: string[] = [
       `Clinical Trial Action Plan — ${conditionLabel}`,
       `Generated: ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
       ``,
     ];
-    favTrials.forEach((t, i) => {
+    exportTrials.forEach((t, i) => {
       const e = t.extracted;
-      lines.push(`━━━ Trial ${i + 1} of ${favTrials.length} ━━━`);
+      lines.push(`━━━ Trial ${i + 1} of ${exportTrials.length} ━━━`);
       lines.push(`${e.briefTitle}`);
       lines.push(`NCT ID: ${e.nctId}  |  ${e.url}`);
       lines.push(`Phase: ${e.phase}  |  Status: ${e.status}  |  Score: ${t.scores.composite}/100`);
@@ -210,36 +223,110 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
       lines.push(``);
     });
     return lines;
-  }, [trials, starredNctIds, conditionLabel]);
+  }, [conditionLabel]);
 
   function exportTxt() {
-    const lines = buildActionPlanLines();
+    const exportTrials = exportTrialsList;
+    if (exportTrials.length === 0) return;
+    const lines = buildActionPlanLines(exportTrials);
     const blob = new Blob([lines.join("\n")], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `trial-action-plan-${conditionLabel.replace(/\s+/g, "-").toLowerCase()}.txt`;
+    a.download = `clinicalsift-${conditionLabel.replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   async function copyToClipboard() {
-    const lines = buildActionPlanLines();
+    const exportTrials = exportTrialsList;
+    if (exportTrials.length === 0) return;
+    const lines = buildActionPlanLines(exportTrials);
     await navigator.clipboard.writeText(lines.join("\n"));
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   }
 
   function printActionPlan() {
-    const favTrials = trials.filter((t) => starredNctIds.includes(t.extracted.nctId));
-    if (favTrials.length === 0) return;
-    const html = buildPrintHtml(favTrials, conditionLabel);
+    const exportTrials = exportTrialsList;
+    if (exportTrials.length === 0) return;
+    const html = buildPrintHtml(exportTrials, conditionLabel);
     const w = window.open("", "_blank");
     if (!w) return;
     w.document.write(html);
     w.document.close();
     w.focus();
     w.print();
+  }
+
+  function exportCsv() {
+    const exportTrials = exportTrialsList;
+    if (exportTrials.length === 0) return;
+
+    const esc = (v: string | number | null | undefined) => {
+      if (v === null || v === undefined) return "";
+      const s = String(v).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? `"${s}"` : s;
+    };
+
+    const headers = [
+      "Rank", "NCT ID", "Title", "Phase", "Status", "Composite Score",
+      "Eligibility Score", "Treatment Access Score", "Preference Match Score",
+      "Sponsor", "Conditions", "Interventions", "Delivery",
+      "Open Label", "Treatment Probability %", "Randomization Ratio",
+      "Closest Site (mi)", "Drive (hrs)", "Closest Facility", "Closest City", "Closest State",
+      "Total Enrollment", "Completion Date",
+      "Dealbreakers Triggered", "Starred", "New",
+      "AI Summary", "AI Hypothesis",
+      "URL",
+    ];
+
+    const rows = exportTrials.map((t, i) => {
+      const e = t.extracted;
+      const closest = e.locations
+        .filter((l) => l.isRecruiting)
+        .sort((a, b) => (a.distanceMiles ?? 9999) - (b.distanceMiles ?? 9999))[0];
+      return [
+        i + 1,
+        e.nctId,
+        e.briefTitle,
+        e.phase,
+        e.status,
+        t.scores.composite,
+        t.scores.eligibility,
+        t.scores.treatmentAccess,
+        t.scores.preferenceMatch,
+        e.sponsor,
+        e.conditions.join("; "),
+        e.interventionNames?.join("; ") ?? "",
+        e.deliveryMethods.map(m => m.replace(/_/g, " ")).join("; "),
+        e.isOpenLabel ? "Yes" : "No",
+        e.treatmentProbabilityPct ?? "",
+        e.randomizationRatio ?? "",
+        e.closestLocationMiles ?? "",
+        e.closestLocationDrivingHours ?? "",
+        closest?.facility ?? "",
+        closest?.city ?? "",
+        closest?.state ?? "",
+        e.totalEnrollment ?? "",
+        e.enrollmentDeadline ? formatCtgDate(e.enrollmentDeadline) : "",
+        t.dealbreakersTriggered.map(d => `${d.category}: ${d.reason}`).join("; "),
+        favorites.has(e.nctId) ? "Yes" : "",
+        newNctIds.has(e.nctId) ? "Yes" : "",
+        e.aiSummary ?? "",
+        e.aiHypothesis ?? "",
+        e.url,
+      ].map(esc).join(",");
+    });
+
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clinicalsift-${conditionLabel.replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   const qualified = trials.filter((t) => t.dealbreakersTriggered.length === 0);
@@ -298,27 +385,70 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {favorites.size > 0 && (
-            <>
-              <Button size="sm" variant="outline" onClick={exportTxt} className="gap-1.5">
-                <Download className="h-3.5 w-3.5" />
-                .txt
-              </Button>
-              <Button size="sm" variant="outline" onClick={copyToClipboard} className="gap-1.5">
-                {copied ? <ClipboardCheck className="h-3.5 w-3.5 text-green-600" /> : <Clipboard className="h-3.5 w-3.5" />}
-                {copied ? "Copied!" : "Copy"}
-              </Button>
-              <Button size="sm" onClick={printActionPlan} className="gap-1.5">
-                <Printer className="h-3.5 w-3.5" />
-                Print / PDF ({favorites.size})
-              </Button>
-            </>
+          {trials.length > 0 && (
+            <Button
+              size="sm"
+              variant={showExportPanel ? "default" : "outline"}
+              onClick={() => setShowExportPanel(s => !s)}
+              className="gap-1.5"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Button>
           )}
           <Button variant="outline" size="sm" onClick={onRefine}>
             Refine Profile
           </Button>
         </div>
       </div>
+
+      {/* Export panel */}
+      {showExportPanel && (
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+          <p className="text-sm font-medium text-foreground">What to export</p>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                { value: "starred",      label: "Starred",         count: starredInResults },
+                { value: "eligible",     label: "All eligible",    count: trials.filter(t => t.dealbreakersTriggered.length === 0).length },
+                { value: "new-eligible", label: "New & eligible",  count: trials.filter(t => newNctIds.has(t.extracted.nctId) && t.dealbreakersTriggered.length === 0).length },
+                { value: "all",          label: "Everything",      count: trials.length },
+              ] as { value: typeof exportScope; label: string; count: number }[]
+            ).map(({ value, label, count }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setExportScope(value)}
+                className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
+                  exportScope === value
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-foreground border-border hover:bg-muted"
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 pt-1 border-t">
+            <Button size="sm" variant="outline" onClick={exportCsv} disabled={exportScopeCount === 0} className="gap-1.5">
+              <Download className="h-3.5 w-3.5" />
+              CSV ({exportScopeCount})
+            </Button>
+            <Button size="sm" variant="outline" onClick={exportTxt} disabled={exportScopeCount === 0} className="gap-1.5">
+              <Download className="h-3.5 w-3.5" />
+              .txt ({exportScopeCount})
+            </Button>
+            <Button size="sm" variant="outline" onClick={copyToClipboard} disabled={exportScopeCount === 0} className="gap-1.5">
+              {copied ? <ClipboardCheck className="h-3.5 w-3.5 text-green-600" /> : <Clipboard className="h-3.5 w-3.5" />}
+              {copied ? "Copied!" : `Copy (${exportScopeCount})`}
+            </Button>
+            <Button size="sm" onClick={printActionPlan} disabled={exportScopeCount === 0} className="gap-1.5">
+              <Printer className="h-3.5 w-3.5" />
+              Print / PDF ({exportScopeCount})
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Transparency note */}
       <div className="text-xs text-muted-foreground/80 flex flex-wrap items-center gap-x-2 gap-y-1 pb-1 border-b">
@@ -400,7 +530,7 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
           onClick={() => setShowStarredOnly((s) => !s)}
         >
           <Star className={`h-3.5 w-3.5 ${showStarredOnly ? "fill-current" : ""}`} />
-          Starred{favorites.size > 0 ? ` (${favorites.size})` : ""}
+          Starred{starredInResults > 0 ? ` (${starredInResults})` : ""}
         </Button>
         {newNctIds.size > 0 && (
           <Button
