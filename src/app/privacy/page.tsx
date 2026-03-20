@@ -18,16 +18,20 @@ export default function PrivacyPage() {
       </div>
 
       <div className="p-4 rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900/20 text-green-900 dark:text-green-200 font-medium">
-        Short version: <strong>Clifton does not collect, store, or transmit your personal
-        data.</strong> Your profile stays in your own browser and is never sent to us.
+        Short version: <strong>Clifton does not collect or store your data.</strong> Your
+        profile is saved only in your own browser and is never sent to us. When you run a
+        search, anonymized health information (condition, age, medical history) is sent to
+        Google Gemini AI to improve matching quality. No names or identifying information
+        are included. See details below.
       </div>
 
       <section className="space-y-2">
         <h2 className="font-semibold text-base">What we collect</h2>
         <p className="text-muted-foreground">
-          Nothing. Clifton has no database, no user accounts, and no server that stores
-          personal information. There are no analytics trackers, no advertising cookies, and no
-          third-party tracking scripts of any kind.
+          Clifton has no database, no user accounts, and no server that stores your
+          information. There are no analytics trackers, no advertising cookies, and no
+          third-party tracking scripts of any kind. However, when you run a search,
+          portions of your profile are transmitted to Google Gemini AI (see below).
         </p>
       </section>
 
@@ -45,9 +49,27 @@ export default function PrivacyPage() {
       <section className="space-y-2">
         <h2 className="font-semibold text-base">Third-party services contacted</h2>
         <p className="text-muted-foreground">
-          When you run a search, Clifton makes two external requests on your behalf:
+          When you run a search, Clifton makes external requests on your behalf:
         </p>
         <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-2">
+          <li>
+            <strong>Google Gemini AI</strong> — to improve search quality and generate trial
+            summaries, the following profile fields are sent to Google&apos;s Gemini API:
+            condition, age, sex, comorbidities, current medications, recent procedures, free-text
+            notes, and preferences (dealbreakers / must-haves). <strong>No name, contact
+            information, or other identifying details are included.</strong> You use this feature
+            at your own risk. Do not enter information that could identify you (full name, address,
+            insurance ID, etc.). Google may process and retain this data in accordance with their
+            own terms.{" "}
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Google Privacy Policy →
+            </a>
+          </li>
           <li>
             <strong>ClinicalTrials.gov</strong> — your condition name and any additional keywords
             are sent as a search query. No other profile information is included. This is the
@@ -76,8 +98,8 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p className="text-muted-foreground">
-          Both requests are proxied through a Vercel edge function to allow caching and to avoid
-          exposing the raw API URLs client-side. Vercel may log request metadata (IP address,
+          All requests are proxied through a Vercel edge function to allow caching and to avoid
+          exposing raw API URLs client-side. Vercel may log request metadata (IP address,
           timestamp) in accordance with their own privacy policy.{" "}
           <a
             href="https://vercel.com/legal/privacy-policy"
@@ -97,15 +119,6 @@ export default function PrivacyPage() {
           search snapshots are stored in{" "}
           <code className="text-xs font-mono bg-muted px-1 py-0.5 rounded">localStorage</code>,
           not cookies.
-        </p>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="font-semibold text-base">Children&apos;s privacy</h2>
-        <p className="text-muted-foreground">
-          Clifton is intended for use by adults, typically caregivers or patients seeking
-          information about clinical trials. We do not knowingly collect information from anyone
-          under 13 years of age.
         </p>
       </section>
 

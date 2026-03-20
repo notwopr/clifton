@@ -111,7 +111,7 @@ export default function SearchPage() {
       }
 
       // ── Step 1: AI query enrichment ──────────────────────────────────────────
-      setLoadingMessage("Normalizing condition with AI…");
+      setLoadingMessage("Clifton is understanding your condition…");
       let searchCondition = condition;
       let aiSynonyms: string[] = [];
       try {
@@ -143,7 +143,7 @@ export default function SearchPage() {
       setSearchQuery(builtQuery);
 
       // ── Step 2: Resolve zip ──────────────────────────────────────────────────
-      setLoadingMessage("Searching ClinicalTrials.gov…");
+      setLoadingMessage("Clifton is searching ClinicalTrials.gov…");
       let userCoords: { lat: number; lon: number } | null = null;
       if (p.zipCode && p.country) {
         userCoords = await resolveZip(
@@ -164,10 +164,43 @@ export default function SearchPage() {
         throw new Error(err.error ?? "Failed to fetch trials");
       }
       const data = await res.json();
-      const studies = data.studies ?? [];
+      let studies: unknown[] = data.studies ?? [];
+
+      // Dual-fetch: if AI normalized the condition, also fetch with the original
+      // user input as a separate CTG query and merge. CTG's query.cond changes
+      // behavior when given many OR terms — the original single-term fuzzy search
+      // may match trials the enriched multi-term query misses.
+      if (searchCondition.toLowerCase() !== condition.toLowerCase()) {
+        try {
+          const fallbackParams = new URLSearchParams({
+            condition,
+            maxResults: "500",
+          });
+          const fallbackRes = await fetch(`/api/trials?${fallbackParams.toString()}`);
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            const fallbackStudies: unknown[] = fallbackData.studies ?? [];
+            const seen = new Set(
+              studies.map(
+                (s) =>
+                  (s as { protocolSection: { identificationModule: { nctId: string } } })
+                    .protocolSection.identificationModule.nctId
+              )
+            );
+            for (const s of fallbackStudies) {
+              const nct = (
+                s as { protocolSection: { identificationModule: { nctId: string } } }
+              ).protocolSection.identificationModule.nctId;
+              if (!seen.has(nct)) studies.push(s);
+            }
+          }
+        } catch {
+          // non-fatal — original AI results still used
+        }
+      }
 
       // ── Step 4: AI trial scoring ─────────────────────────────────────────────
-      setLoadingMessage("AI is scoring and matching trials…");
+      setLoadingMessage("Clifton is scoring and matching trials…");
       let aiScores: Map<string, AITrialScore> | undefined;
       if (studies.length > 0) {
         try {
@@ -224,7 +257,7 @@ export default function SearchPage() {
       }
 
       // ── Step 5: Rank ─────────────────────────────────────────────────────────
-      setLoadingMessage("Ranking results…");
+      setLoadingMessage("Clifton is ranking your results…");
       const ranked = await rankTrials(studies, p, userCoords, aiScores);
       const allCurrentIds = ranked.map((t) => t.extracted.nctId);
       const prevSnapshot = loadTrialSnapshot(p.condition);

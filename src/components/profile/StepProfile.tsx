@@ -72,7 +72,7 @@ export function StepProfile({ profiles, profile, onSwitch, onCreate, onDelete, o
       <div>
         <h2 className="text-xl font-semibold">Who are we searching for?</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Completely optional — no account, no sign-up, nothing leaves your browser.
+          Completely optional — nothing is stored on our servers.
           Naming a profile just makes it easier to pick up where you left off if you search for more than one person.
           You can skip straight to the search if you prefer.
         </p>

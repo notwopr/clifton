@@ -33,7 +33,7 @@ export default function Home() {
           {/* Text */}
           <div className="flex flex-col gap-5 text-center sm:text-left">
             <Badge variant="outline" className="text-sm px-3 py-1 self-center sm:self-start">
-              Free · No account required · Your data stays on your device
+              Always free · Fully open source · No tracking
             </Badge>
 
             <div>
@@ -129,8 +129,8 @@ export default function Home() {
               },
               {
                 icon: <Shield className="h-5 w-5" />,
-                title: "Private by design",
-                desc: "Your profile never leaves your browser. No account, no email, no tracking — ever.",
+                title: "Private and transparent",
+                desc: "Your profile is saved only in your browser — no tracking, no emails, nothing stored on our servers. When you search, anonymized health data (no names) is sent to Google Gemini AI to improve matching. Clifton is fully open source so you can verify exactly what it does.",
               },
               {
                 icon: <Share2 className="h-5 w-5" />,
@@ -159,7 +159,7 @@ export default function Home() {
       <section className="py-20 px-4 text-center space-y-5">
         <h2 className="text-2xl font-bold">Ready to find a trial?</h2>
         <p className="text-muted-foreground">
-          Takes about 5 minutes to set up. No sign-up required.
+          Takes about 5 minutes to set up.
         </p>
         <Button render={<Link href="/search" />} nativeButton={false} size="lg" className="gap-2">
           Get started

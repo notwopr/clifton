@@ -49,6 +49,19 @@ export default function TermsPage() {
       </section>
 
       <section className="space-y-2">
+        <h2 className="font-semibold text-base">AI-generated content</h2>
+        <p className="text-muted-foreground">
+          Clifton uses Google Gemini AI to normalize search queries, rank trials, and generate
+          plain-English summaries and hypotheses. AI-generated content may contain errors,
+          omissions, or hallucinations. The &ldquo;Why it might work&rdquo; hypothesis draws on
+          information beyond ClinicalTrials.gov (including published research and prior trial
+          data) and may not accurately represent the trial&apos;s actual mechanism or outcomes.
+          All AI-generated content must be independently verified with a qualified healthcare
+          provider, the trial sponsor, or the trial coordinator before making any decisions.
+        </p>
+      </section>
+
+      <section className="space-y-2">
         <h2 className="font-semibold text-base">Data accuracy</h2>
         <p className="text-muted-foreground">
           Trial data is sourced from ClinicalTrials.gov, which is maintained by the U.S. National

@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Clifton — Find & Rank Clinical Trials",
   description:
-    "Enter a patient profile and instantly get a ranked list of recruiting clinical trials matched to your eligibility and preferences. Free, private, no account needed.",
+    "Enter a patient profile and instantly get a ranked list of recruiting clinical trials matched to your eligibility and preferences. Free, open source, and no tracking.",
 };
 
 export default function RootLayout({
