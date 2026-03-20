@@ -1,4 +1,4 @@
-import type { UserProfile } from "./types";
+import type { UserProfile, RankedTrial } from "./types";
 import { defaultProfile } from "./types";
 
 const PROFILES_KEY = "clifton_profiles";
@@ -153,6 +153,79 @@ export function loadTrialSnapshot(condition: string): TrialSnapshot | null {
 function loadAllSnapshots(): Record<string, TrialSnapshot> {
   try {
     const raw = localStorage.getItem(SNAPSHOT_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+// ─── Search results cache ─────────────────────────────────────────────────────
+
+const RESULTS_CACHE_KEY = "clifton_results_cache";
+const CACHE_TTL_HOURS = 24;
+
+interface SearchResultsCache {
+  profileHash: string;
+  searchedAt: string;
+  trials: RankedTrial[];
+  totalFromApi: number;
+}
+
+/** djb2-style hash of all search-relevant profile fields (excludes id, label, starredTrials). */
+export function hashProfile(p: UserProfile): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { id: _id, label: _label, starredTrials: _starred, ...searchFields } = p;
+  const str = JSON.stringify(searchFields);
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+    hash = hash >>> 0;
+  }
+  return hash.toString(36);
+}
+
+export function saveSearchResults(
+  profileId: string,
+  profileHash: string,
+  trials: RankedTrial[],
+  totalFromApi: number
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = loadAllResultsCache();
+    existing[profileId] = {
+      profileHash,
+      searchedAt: new Date().toISOString(),
+      trials,
+      totalFromApi,
+    };
+    localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(existing));
+  } catch {
+    // Quota exceeded or serialization error — non-fatal
+  }
+}
+
+export function loadSearchResults(
+  profileId: string,
+  profileHash: string
+): SearchResultsCache | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const all = loadAllResultsCache();
+    const cached = all[profileId];
+    if (!cached) return null;
+    if (cached.profileHash !== profileHash) return null;
+    const hoursSince = (Date.now() - new Date(cached.searchedAt).getTime()) / 1000 / 3600;
+    if (hoursSince >= CACHE_TTL_HOURS) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function loadAllResultsCache(): Record<string, SearchResultsCache> {
+  try {
+    const raw = localStorage.getItem(RESULTS_CACHE_KEY);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};

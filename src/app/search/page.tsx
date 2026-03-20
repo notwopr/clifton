@@ -10,6 +10,9 @@ import {
   deleteProfile,
   saveTrialSnapshot,
   loadTrialSnapshot,
+  saveSearchResults,
+  loadSearchResults,
+  hashProfile,
 } from "@/lib/storage";
 import { rankTrials } from "@/lib/ranking";
 import { resolveZip } from "@/lib/eligibility";
@@ -110,6 +113,28 @@ export default function SearchPage() {
         return;
       }
 
+      // ── Cache check ───────────────────────────────────────────────────────────
+      // If nothing in the profile changed and results are < 24h old, skip the
+      // full search and return cached results immediately.
+      const profileHash = hashProfile(p);
+      const cached = loadSearchResults(p.id, profileHash);
+      if (cached) {
+        const snap = loadTrialSnapshot(p.condition);
+        const prevIds = snap ? new Set(snap.nctIds) : new Set<string>();
+        const currentIds = cached.trials.map((t) => t.extracted.nctId);
+        setNewNctIds(new Set(currentIds.filter((id) => !prevIds.has(id))));
+        setLastSearchedAt(snap?.searchedAt ?? null);
+        setCurrentSearchedAt(cached.searchedAt);
+        setTrials(cached.trials);
+        setTotalFromApi(cached.totalFromApi);
+        setSearchQuery(p.condition);
+        setView("results");
+        window.scrollTo({ top: 0, behavior: "instant" });
+        setIsLoading(false);
+        setLoadingMessage("");
+        return;
+      }
+
       // ── Step 1: AI query enrichment ──────────────────────────────────────────
       setLoadingMessage("Clifton is understanding your condition…");
       let searchCondition = condition;
@@ -199,25 +224,31 @@ export default function SearchPage() {
         }
       }
 
-      // ── Step 4: AI trial scoring ─────────────────────────────────────────────
+      // ── Step 4: AI trial scoring (batched parallel) ──────────────────────────
+      // Split all trials into batches of 100 and fire them in parallel.
+      // Each batch completes in ~8-12s; running in parallel keeps total time
+      // under the 45s timeout even for 500 results.
+      const AI_BATCH_SIZE = 100;
       setLoadingMessage("Clifton is scoring and matching trials…");
       let aiScores: Map<string, AITrialScore> | undefined;
       if (studies.length > 0) {
         try {
-          const trialPayloads = studies.map((s: {
+          type StudyShape = {
             protocolSection: {
               identificationModule: { nctId: string; briefTitle: string };
               conditionsModule?: { conditions?: string[] };
               descriptionModule?: { briefSummary?: string };
               eligibilityModule?: { eligibilityCriteria?: string };
             };
-          }) => {
+          };
+          const parseBlock = (block: string) =>
+            block.split(/\n/).map(l => l.replace(/^[\s\-\*\d\.]+/, "").trim()).filter(l => l.length > 10);
+
+          const allPayloads = (studies as StudyShape[]).map((s) => {
             const id = s.protocolSection.identificationModule;
             const crit = s.protocolSection.eligibilityModule?.eligibilityCriteria ?? "";
             const inclMatch = crit.match(/inclusion criteria[:\s]*([\s\S]*?)(?:exclusion criteria|$)/i);
             const exclMatch = crit.match(/exclusion criteria[:\s]*([\s\S]*?)$/i);
-            const parseBlock = (block: string) =>
-              block.split(/\n/).map(l => l.replace(/^[\s\-\*\d\.]+/, "").trim()).filter(l => l.length > 10).slice(0, 5);
             return {
               nctId: id.nctId,
               title: id.briefTitle,
@@ -228,28 +259,46 @@ export default function SearchPage() {
             };
           });
 
-          const scoreRes = await fetch("/api/ai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "score-trials",
-              profile: {
-                condition: searchCondition,
-                age: p.age,
-                sex: p.sex,
-                comorbidities: p.comorbidities ?? [],
-                currentMedications: p.currentMedications ?? [],
-                recentProcedures: p.recentProcedures ?? [],
-                notes: p.notes ?? "",
-                dealbreakers: p.preferences?.dealbreakers ?? "",
-                mustHave: p.preferences?.mustHave ?? "",
-              },
-              trials: trialPayloads,
-            }),
-          });
-          if (scoreRes.ok) {
-            const scores: AITrialScore[] = await scoreRes.json();
-            aiScores = new Map(scores.map((s) => [s.nctId, s]));
+          // Split into chunks
+          const batches: typeof allPayloads[] = [];
+          for (let i = 0; i < allPayloads.length; i += AI_BATCH_SIZE) {
+            batches.push(allPayloads.slice(i, i + AI_BATCH_SIZE));
+          }
+
+          const profilePayload = {
+            condition: searchCondition,
+            age: p.age,
+            sex: p.sex,
+            comorbidities: p.comorbidities ?? [],
+            currentMedications: p.currentMedications ?? [],
+            recentProcedures: p.recentProcedures ?? [],
+            notes: p.notes ?? "",
+            dealbreakers: p.preferences?.dealbreakers ?? "",
+            mustHave: p.preferences?.mustHave ?? "",
+          };
+
+          // Fire all batches in parallel
+          const batchResults = await Promise.allSettled(
+            batches.map((batch) =>
+              fetch("/api/ai", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  action: "score-trials",
+                  profile: profilePayload,
+                  trials: batch,
+                }),
+              }).then((r) => (r.ok ? (r.json() as Promise<AITrialScore[]>) : Promise.resolve([])))
+            )
+          );
+
+          // Merge all successful batch results
+          const allScores: AITrialScore[] = [];
+          for (const result of batchResults) {
+            if (result.status === "fulfilled") allScores.push(...result.value);
+          }
+          if (allScores.length > 0) {
+            aiScores = new Map(allScores.map((s) => [s.nctId, s]));
           }
         } catch {
           // non-fatal — fall back to deterministic ranking
@@ -270,9 +319,11 @@ export default function SearchPage() {
         setLastSearchedAt(null);
       }
       saveTrialSnapshot(p.condition, allCurrentIds);
+      const totalFromApi = data.totalCount ?? ranked.length;
+      saveSearchResults(p.id, profileHash, ranked, totalFromApi);
       setCurrentSearchedAt(new Date().toISOString());
       setTrials(ranked);
-      setTotalFromApi(data.totalCount ?? ranked.length);
+      setTotalFromApi(totalFromApi);
       setView("results");
       window.scrollTo({ top: 0, behavior: "instant" });
     } catch (err) {

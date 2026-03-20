@@ -50,7 +50,7 @@ export async function fetchTrials(
 
   const url = `${CTG_BASE}?${params.toString()}`;
 
-  const res = await fetch(url, { signal, next: { revalidate: 3600 } });
+  const res = await fetch(url, { signal });
   if (!res.ok) {
     throw new Error(`ClinicalTrials.gov API error: ${res.status} ${res.statusText}`);
   }
