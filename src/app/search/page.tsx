@@ -21,17 +21,6 @@ type View = "wizard" | "results";
 
 const AUTO_CHECK_HOURS = 24 * 7;
 
-function timeAgo(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 2) return "just now";
-  if (mins < 60) return `${mins} minute${mins !== 1 ? "s" : ""} ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-  const days = Math.floor(hours / 24);
-  return `${days} day${days !== 1 ? "s" : ""} ago`;
-}
-
 export default function SearchPage() {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -45,7 +34,6 @@ export default function SearchPage() {
   const [newNctIds, setNewNctIds] = useState<Set<string>>(new Set());
   const [lastSearchedAt, setLastSearchedAt] = useState<string | null>(null);
   const [currentSearchedAt, setCurrentSearchedAt] = useState<string | null>(null);
-  const [lastCheckTime, setLastCheckTime] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoChecked = useRef(false);
   const profileRef = useRef<UserProfile | null>(null);
@@ -56,10 +44,6 @@ export default function SearchPage() {
     setProfiles(all.length > 0 ? all : [active]);
     profileRef.current = active;
     setProfile(active);
-    if (active.condition) {
-      const snap = loadTrialSnapshot(active.condition);
-      if (snap) setLastCheckTime(snap.searchedAt);
-    }
   }, []);
 
   function updateProfile(p: UserProfile) {
@@ -79,8 +63,6 @@ export default function SearchPage() {
     setView("wizard");
     setTrials([]);
     autoChecked.current = false;
-    const snap = loadTrialSnapshot(p.condition);
-    setLastCheckTime(snap?.searchedAt ?? null);
   }
 
   function handleSwitchAndSearch(p: UserProfile) {
@@ -100,7 +82,6 @@ export default function SearchPage() {
     setView("wizard");
     setTrials([]);
     autoChecked.current = false;
-    setLastCheckTime(null);
   }
 
   function handleDelete(id: string) {
@@ -112,7 +93,6 @@ export default function SearchPage() {
     setView("wizard");
     setTrials([]);
     autoChecked.current = false;
-    setLastCheckTime(next.condition ? loadTrialSnapshot(next.condition)?.searchedAt ?? null : null);
   }
 
   const handleSearch = useCallback(async (overrideProfile?: UserProfile) => {
@@ -166,9 +146,7 @@ if (!p) return;
         setLastSearchedAt(null);
       }
       saveTrialSnapshot(p.condition, allCurrentIds);
-      const now = new Date().toISOString();
-      setCurrentSearchedAt(now);
-      setLastCheckTime(now);
+      setCurrentSearchedAt(new Date().toISOString());
       setTrials(ranked);
       setTotalFromApi(data.totalCount ?? ranked.length);
       setView("results");
@@ -204,11 +182,9 @@ if (!p) return;
       {view === "wizard" ? (
         <div className="max-w-2xl mx-auto space-y-4">
           <div className="h-5 flex items-center justify-end">
-            {savedFlash ? (
+            {savedFlash && (
               <span className="text-xs text-muted-foreground animate-in fade-in">✓ Saved</span>
-            ) : lastCheckTime ? (
-              <span className="text-xs text-muted-foreground">Last checked: {timeAgo(lastCheckTime)}</span>
-            ) : null}
+            )}
           </div>
 
           <Card>

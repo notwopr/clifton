@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero */}
-      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/30">
+      <section className="pt-12 pb-20 px-4 bg-gradient-to-b from-background to-muted/30">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-10 sm:gap-16">
           {/* Logo */}
           <div className="shrink-0 rounded-3xl p-6 bg-transparent dark:bg-white">
@@ -65,7 +65,7 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-16 px-4 max-w-5xl mx-auto w-full">
+      <section id="how-it-works" className="py-16 px-4 max-w-5xl mx-auto w-full scroll-mt-36">
         <h2 className="text-2xl font-bold text-center mb-10">How it works</h2>
         <div className="grid sm:grid-cols-3 gap-6">
           {[

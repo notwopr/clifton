@@ -31,16 +31,36 @@ interface Props {
   isLoading: boolean;
 }
 
+function timeAgo(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 2) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export function StepProfile({ profiles, profile, onSwitch, onCreate, onDelete, onChange, onSwitchAndSearch, isLoading }: Props) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [profilesWithResults, setProfilesWithResults] = useState<Set<string>>(new Set());
+  const [lastCheckedTimes, setLastCheckedTimes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const withResults = new Set<string>();
+    const times: Record<string, string> = {};
     for (const p of profiles) {
-      if (p.condition && loadTrialSnapshot(p.condition)) withResults.add(p.id);
+      if (p.condition) {
+        const snap = loadTrialSnapshot(p.condition);
+        if (snap) {
+          withResults.add(p.id);
+          times[p.id] = snap.searchedAt;
+        }
+      }
     }
     setProfilesWithResults(withResults);
+    setLastCheckedTimes(times);
   }, [profiles]);
 
   function handleCreate() {
@@ -94,20 +114,27 @@ export function StepProfile({ profiles, profile, onSwitch, onCreate, onDelete, o
                     )}
                   </button>
                   {hasPriorResults && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="shrink-0 gap-1.5 text-xs h-7"
-                      disabled={isLoading}
-                      onClick={() => onSwitchAndSearch(p)}
-                    >
-                      {isLoading && p.id === profile.id ? (
-                        <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
-                      ) : (
-                        <Search className="h-3 w-3" />
+                    <div className="flex flex-col items-end gap-0.5 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 text-xs h-7"
+                        disabled={isLoading}
+                        onClick={() => onSwitchAndSearch(p)}
+                      >
+                        {isLoading && p.id === profile.id ? (
+                          <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
+                        ) : (
+                          <Search className="h-3 w-3" />
+                        )}
+                        Get updated results
+                      </Button>
+                      {lastCheckedTimes[p.id] && (
+                        <span className="text-[10px] text-muted-foreground/70">
+                          Last checked {timeAgo(lastCheckedTimes[p.id])}
+                        </span>
                       )}
-                      Get updated results
-                    </Button>
+                    </div>
                   )}
                 </div>
               );
