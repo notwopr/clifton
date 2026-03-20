@@ -16,6 +16,7 @@ import {
   Bell,
   Heart,
   Coffee,
+  Sparkles,
 } from "lucide-react";
 
 export default function Home() {
@@ -106,6 +107,11 @@ export default function Home() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {[
+              {
+                icon: <Sparkles className="h-5 w-5" />,
+                title: "AI-powered matching",
+                desc: "Gemini AI normalizes condition spelling, understands synonyms and abbreviations, semantically detects conflicts with your comorbidities and medications, and generates plain-English summaries for every trial.",
+              },
               {
                 icon: <Brain className="h-5 w-5" />,
                 title: "Smart eligibility matching",

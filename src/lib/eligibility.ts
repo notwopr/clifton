@@ -328,6 +328,21 @@ export function extractTrialData(
     conditionRelevanceScore = 1.0; // no filter if no condition set
   }
 
+  // Intervention names: prefer DRUG/BIOLOGICAL/DEVICE types, fall back to all
+  const interventions = arms?.interventions ?? [];
+  const primaryTypes = ["DRUG", "BIOLOGICAL", "DEVICE", "GENETIC", "RADIATION"];
+  let interventionNames = interventions
+    .filter((i) => primaryTypes.includes(i.type?.toUpperCase() ?? ""))
+    .map((i) => i.name ?? "")
+    .filter(Boolean);
+  if (interventionNames.length === 0) {
+    interventionNames = interventions.map((i) => i.name ?? "").filter(Boolean);
+  }
+  // Remove obvious placebo/sham entries
+  interventionNames = interventionNames.filter(
+    (n) => !/\b(placebo|sham|sugar pill)\b/i.test(n)
+  );
+
   return {
     nctId,
     url: `https://clinicaltrials.gov/study/${nctId}`,
@@ -336,6 +351,7 @@ export function extractTrialData(
     status: status.overallStatus,
     conditions: study.protocolSection.conditionsModule?.conditions ?? [],
     summary: desc?.briefSummary ?? "",
+    interventionNames,
     locations,
     closestLocationMiles,
     closestLocationDrivingHours,

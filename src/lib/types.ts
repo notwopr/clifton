@@ -258,6 +258,20 @@ export interface DealbreakersTriggered {
   reason: string;
 }
 
+// ─── AI scoring output ────────────────────────────────────────────────────────
+
+export interface AITrialScore {
+  nctId: string;
+  relevanceScore: number;          // 0-1: how relevant to the patient's condition
+  comorbidityConflicts: string[];  // comorbidities that conflict with exclusion criteria
+  medicationConflicts: string[];   // medications that conflict with exclusion criteria
+  dealbreakersFound: string[];     // semantic dealbreaker issues found in trial
+  mustHavesFound: string[];        // must-have features found in trial
+  plainSummary: string;            // plain-English 1-2 sentence summary
+  hypothesis?: string;             // why this treatment might work (1 sentence)
+  visitSchedule?: string;          // e.g. "Monthly IV infusions, in-clinic visits every 4 weeks"
+}
+
 export interface ExtractedTrialData {
   phase: string;
   status: string;
@@ -266,6 +280,10 @@ export interface ExtractedTrialData {
   url: string;
   conditions: string[];
   summary: string;
+  aiSummary?: string;              // AI-generated plain-English summary
+  aiHypothesis?: string;           // AI-generated hypothesis for why treatment might work
+  aiVisitSchedule?: string;        // AI-extracted visit schedule description
+  interventionNames: string[];     // drug/device/treatment names being tested
   locations: ExtractedLocation[];
   closestLocationMiles: number | null;
   closestLocationDrivingHours: number | null; // estimated one-way drive time

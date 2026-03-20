@@ -338,6 +338,18 @@ export function ResultsPanel({ trials, totalFromApi, conditionLabel, searchQuery
         </a>
       </div>
 
+      {/* AI notice */}
+      <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-muted/40 border text-xs text-muted-foreground">
+        <Sparkles className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary/60" />
+        <span>
+          <span className="font-medium text-foreground">AI-enhanced results.</span>{" "}
+          Ranking, eligibility matching, and trial summaries use Google Gemini AI.
+          The <span className="font-medium">&#34;Why it might work&#34;</span> section may draw on published research and prior trials beyond ClinicalTrials.gov.
+          AI can make mistakes — verify all information with your doctor or trial coordinator before making any decisions.
+          This is not medical advice.
+        </span>
+      </div>
+
       {newNctIds.size > 0 && lastSearchedAt && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-blue-50 border border-blue-200 text-sm text-blue-800 dark:bg-blue-900/20 dark:border-blue-900 dark:text-blue-200">
           <Bell className="h-4 w-4 shrink-0 text-blue-500 dark:text-blue-400" />

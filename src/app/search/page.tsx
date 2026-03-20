@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { UserProfile, RankedTrial } from "@/lib/types";
+import type { UserProfile, RankedTrial, AITrialScore } from "@/lib/types";
 import {
   loadActiveProfile,
   loadAllProfiles,
@@ -29,6 +29,7 @@ export default function SearchPage() {
   const [totalFromApi, setTotalFromApi] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
   const [newNctIds, setNewNctIds] = useState<Set<string>>(new Set());
@@ -97,11 +98,52 @@ export default function SearchPage() {
 
   const handleSearch = useCallback(async (overrideProfile?: UserProfile) => {
     const p = overrideProfile ?? profileRef.current;
-if (!p) return;
+    if (!p) return;
     setIsLoading(true);
     setError(null);
 
     try {
+      const condition = p.condition?.trim() ?? "";
+      if (!condition) {
+        setError("Please enter a condition to search for.");
+        setIsLoading(false);
+        return;
+      }
+
+      // ── Step 1: AI query enrichment ──────────────────────────────────────────
+      setLoadingMessage("Normalizing condition with AI…");
+      let searchCondition = condition;
+      let aiSynonyms: string[] = [];
+      try {
+        const enrichRes = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "enrich-query", condition }),
+        });
+        if (enrichRes.ok) {
+          const enriched = await enrichRes.json();
+          if (enriched.normalizedCondition) searchCondition = enriched.normalizedCondition;
+          if (Array.isArray(enriched.searchSynonyms)) aiSynonyms = enriched.searchSynonyms;
+        }
+      } catch {
+        // non-fatal — continue with original condition
+      }
+
+      const keywords = [
+        ...(p.conditionKeywords ?? []),
+        ...aiSynonyms,
+        // Always include original user input as CTG fallback — AI normalization
+        // (e.g. adding apostrophes, exact phrases) can cause CTG to return a
+        // different result set than the original fuzzy/stemmed query.
+        ...(searchCondition.toLowerCase() !== condition.toLowerCase() ? [condition] : []),
+      ];
+      const builtQuery = keywords.length
+        ? `${searchCondition}, ${keywords.join(", ")}`
+        : searchCondition;
+      setSearchQuery(builtQuery);
+
+      // ── Step 2: Resolve zip ──────────────────────────────────────────────────
+      setLoadingMessage("Searching ClinicalTrials.gov…");
       let userCoords: { lat: number; lon: number } | null = null;
       if (p.zipCode && p.country) {
         userCoords = await resolveZip(
@@ -110,22 +152,11 @@ if (!p) return;
         );
       }
 
-      const condition = p.condition?.trim() ?? "";
-      if (!condition) {
-        setError("Please enter a condition to search for.");
-        setIsLoading(false);
-        return;
-      }
-
-      const keywords = p.conditionKeywords ?? [];
-      const keywordsStr = keywords.join(", ");
-      const builtQuery = keywordsStr ? `${condition}, ${keywordsStr}` : condition;
-      setSearchQuery(builtQuery);
-
+      // ── Step 3: Fetch trials ─────────────────────────────────────────────────
       const params = new URLSearchParams({
-        condition,
+        condition: searchCondition,
         keywords: keywords.join(","),
-        maxResults: "200",
+        maxResults: "500",
       });
       const res = await fetch(`/api/trials?${params.toString()}`);
       if (!res.ok) {
@@ -133,8 +164,68 @@ if (!p) return;
         throw new Error(err.error ?? "Failed to fetch trials");
       }
       const data = await res.json();
+      const studies = data.studies ?? [];
 
-      const ranked = await rankTrials(data.studies ?? [], p, userCoords);
+      // ── Step 4: AI trial scoring ─────────────────────────────────────────────
+      setLoadingMessage("AI is scoring and matching trials…");
+      let aiScores: Map<string, AITrialScore> | undefined;
+      if (studies.length > 0) {
+        try {
+          const trialPayloads = studies.map((s: {
+            protocolSection: {
+              identificationModule: { nctId: string; briefTitle: string };
+              conditionsModule?: { conditions?: string[] };
+              descriptionModule?: { briefSummary?: string };
+              eligibilityModule?: { eligibilityCriteria?: string };
+            };
+          }) => {
+            const id = s.protocolSection.identificationModule;
+            const crit = s.protocolSection.eligibilityModule?.eligibilityCriteria ?? "";
+            const inclMatch = crit.match(/inclusion criteria[:\s]*([\s\S]*?)(?:exclusion criteria|$)/i);
+            const exclMatch = crit.match(/exclusion criteria[:\s]*([\s\S]*?)$/i);
+            const parseBlock = (block: string) =>
+              block.split(/\n/).map(l => l.replace(/^[\s\-\*\d\.]+/, "").trim()).filter(l => l.length > 10).slice(0, 5);
+            return {
+              nctId: id.nctId,
+              title: id.briefTitle,
+              conditions: s.protocolSection.conditionsModule?.conditions ?? [],
+              summary: (s.protocolSection.descriptionModule?.briefSummary ?? "").slice(0, 300),
+              inclusion: inclMatch ? parseBlock(inclMatch[1]).slice(0, 3) : [],
+              exclusion: exclMatch ? parseBlock(exclMatch[1]).slice(0, 5) : [],
+            };
+          });
+
+          const scoreRes = await fetch("/api/ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "score-trials",
+              profile: {
+                condition: searchCondition,
+                age: p.age,
+                sex: p.sex,
+                comorbidities: p.comorbidities ?? [],
+                currentMedications: p.currentMedications ?? [],
+                recentProcedures: p.recentProcedures ?? [],
+                notes: p.notes ?? "",
+                dealbreakers: p.preferences?.dealbreakers ?? "",
+                mustHave: p.preferences?.mustHave ?? "",
+              },
+              trials: trialPayloads,
+            }),
+          });
+          if (scoreRes.ok) {
+            const scores: AITrialScore[] = await scoreRes.json();
+            aiScores = new Map(scores.map((s) => [s.nctId, s]));
+          }
+        } catch {
+          // non-fatal — fall back to deterministic ranking
+        }
+      }
+
+      // ── Step 5: Rank ─────────────────────────────────────────────────────────
+      setLoadingMessage("Ranking results…");
+      const ranked = await rankTrials(studies, p, userCoords, aiScores);
       const allCurrentIds = ranked.map((t) => t.extracted.nctId);
       const prevSnapshot = loadTrialSnapshot(p.condition);
       if (prevSnapshot) {
@@ -155,6 +246,7 @@ if (!p) return;
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setIsLoading(false);
+      setLoadingMessage("");
     }
   }, []);
 
@@ -173,6 +265,17 @@ if (!p) return;
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="animate-spin h-10 w-10 border-2 border-primary border-t-transparent rounded-full" />
+        {loadingMessage && (
+          <p className="text-sm text-muted-foreground animate-in fade-in">{loadingMessage}</p>
+        )}
       </div>
     );
   }
@@ -208,6 +311,12 @@ if (!p) return;
               {error}
             </div>
           )}
+
+          <p className="text-xs text-muted-foreground/60 text-center px-2">
+            Health data you enter (age, conditions, medications) is sent to Google Gemini AI to improve matching accuracy.
+            Do not include names or any personally identifying information.
+            AI can make mistakes — always verify results with your doctor or trial coordinator.
+          </p>
         </div>
       ) : (
         <ResultsPanel

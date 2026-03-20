@@ -16,6 +16,7 @@ import type {
   UserProfile,
   PreferenceLevel,
   TrialPhase,
+  AITrialScore,
 } from "./types";
 import { extractTrialData } from "./eligibility";
 
@@ -45,7 +46,8 @@ function textContainsAny(text: string, keywords: string[]): boolean {
 
 function scoreEligibility(
   profile: UserProfile,
-  extracted: RankedTrial["extracted"]
+  extracted: RankedTrial["extracted"],
+  aiScore?: AITrialScore
 ): { score: number; dimension: ScoreDimension; dealbreakers: DealbreakersTriggered[] } {
   const dealbreakers: DealbreakersTriggered[] = [];
   let penalty = 0;
@@ -81,30 +83,33 @@ function scoreEligibility(
     }
   }
 
-  // Comorbidity conflict — check exclusion criteria for mentions of patient's conditions
-  const exclusionText = (extracted.exclusionCriteria ?? []).join(" ").toLowerCase();
-  const flaggedComorbidities: string[] = [];
-  for (const comorbidity of (profile.comorbidities ?? [])) {
-    const words = comorbidity.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
-    if (words.some((w) => exclusionText.includes(w))) {
-      flaggedComorbidities.push(comorbidity);
-    }
-  }
+  // Comorbidity conflict — AI semantic detection preferred, keyword fallback
+  const flaggedComorbidities: string[] = aiScore
+    ? aiScore.comorbidityConflicts
+    : (() => {
+        const exclusionText = (extracted.exclusionCriteria ?? []).join(" ").toLowerCase();
+        return (profile.comorbidities ?? []).filter((c) =>
+          c.toLowerCase().split(/\s+/).filter((w) => w.length > 3)
+            .some((w) => exclusionText.includes(w))
+        );
+      })();
+
   if (flaggedComorbidities.length > 0) {
     penalty += 30 * flaggedComorbidities.length;
-    reasons.push(
-      `Possible conflict with exclusion criteria: ${flaggedComorbidities.join(", ")}`
-    );
+    reasons.push(`Possible conflict with exclusion criteria: ${flaggedComorbidities.join(", ")}`);
   }
 
-  // Medication conflict check
-  const flaggedMeds: string[] = [];
-  for (const med of (profile.currentMedications ?? [])) {
-    const words = med.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
-    if (words.some((w) => exclusionText.includes(w))) {
-      flaggedMeds.push(med);
-    }
-  }
+  // Medication conflict — AI semantic detection preferred, keyword fallback
+  const flaggedMeds: string[] = aiScore
+    ? aiScore.medicationConflicts
+    : (() => {
+        const exclusionText = (extracted.exclusionCriteria ?? []).join(" ").toLowerCase();
+        return (profile.currentMedications ?? []).filter((m) =>
+          m.toLowerCase().split(/\s+/).filter((w) => w.length > 3)
+            .some((w) => exclusionText.includes(w))
+        );
+      })();
+
   if (flaggedMeds.length > 0) {
     penalty += 20 * flaggedMeds.length;
     reasons.push(`Possible medication conflict: ${flaggedMeds.join(", ")}`);
@@ -203,7 +208,8 @@ function scoreTreatmentAccess(
 
 function scorePreferences(
   profile: UserProfile,
-  extracted: RankedTrial["extracted"]
+  extracted: RankedTrial["extracted"],
+  aiScore?: AITrialScore
 ): { score: number; dimensions: ScoreDimension[]; dealbreakers: DealbreakersTriggered[] } {
   const prefs = profile.preferences ?? {};
   const dealbreakers: DealbreakersTriggered[] = [];
@@ -420,8 +426,12 @@ function scorePreferences(
     reason: timeReason,
   });
 
-  // ── Free-form dealbreakers keyword match ──
-  if (prefs.dealbreakers?.trim()) {
+  // ── Free-form dealbreakers — AI semantic preferred, keyword fallback ──
+  if (aiScore) {
+    for (const issue of aiScore.dealbreakersFound) {
+      dealbreakers.push({ category: "Custom Dealbreaker", reason: issue });
+    }
+  } else if (prefs.dealbreakers?.trim()) {
     const userDealbreakers = prefs.dealbreakers
       .split(/[,;\n]+/)
       .map((d) => d.trim())
@@ -441,21 +451,26 @@ function scorePreferences(
     }
   }
 
-  // ── Free-form must-have keyword match (penalise if absent) ──
+  // ── Free-form must-haves — AI semantic preferred, keyword fallback ──
   let mustHaveScore = 100;
   if (prefs.mustHave?.trim()) {
     const mustHaves = prefs.mustHave
       .split(/[,;\n]+/)
       .map((d) => d.trim())
       .filter(Boolean);
-    const trialFullText = [
-      extracted.summary,
-      (extracted.inclusionCriteria ?? []).join(" "),
-    ].join(" ");
-    const missingCount = mustHaves.filter(
-      (kw) => !textContainsAny(trialFullText, [kw])
-    ).length;
-    mustHaveScore = clamp(100 - missingCount * 30);
+    if (aiScore) {
+      const missingCount = mustHaves.length - aiScore.mustHavesFound.length;
+      mustHaveScore = clamp(100 - Math.max(0, missingCount) * 30);
+    } else {
+      const trialFullText = [
+        extracted.summary,
+        (extracted.inclusionCriteria ?? []).join(" "),
+      ].join(" ");
+      const missingCount = mustHaves.filter(
+        (kw) => !textContainsAny(trialFullText, [kw])
+      ).length;
+      mustHaveScore = clamp(100 - missingCount * 30);
+    }
   }
 
   // Weighted preference score from dimensions
@@ -479,7 +494,8 @@ function scorePreferences(
 export async function rankTrials(
   studies: CTGStudy[],
   profile: UserProfile,
-  userCoords: { lat: number; lon: number } | null
+  userCoords: { lat: number; lon: number } | null,
+  aiScores?: Map<string, AITrialScore>
 ): Promise<RankedTrial[]> {
   // Tag each study with the user's condition for relevance scoring
   const taggedStudies = studies.map((s) =>
@@ -489,10 +505,27 @@ export async function rankTrials(
   const ranked: RankedTrial[] = taggedStudies.flatMap((study) => {
     try {
     const extracted = extractTrialData(study, userCoords);
+    const aiScore = aiScores?.get(extracted.nctId);
 
-    const eligResult = scoreEligibility(profile, extracted);
+    // Apply AI enrichments to extracted data before scoring
+    if (aiScore) {
+      if (aiScore.relevanceScore !== undefined) {
+        // Use the MAX of AI score and deterministic score — AI can boost relevance
+        // but must never reduce it below what keyword matching already established.
+        // This prevents the AI from excluding trials the old system correctly found.
+        extracted.conditionRelevanceScore = Math.max(
+          aiScore.relevanceScore,
+          extracted.conditionRelevanceScore
+        );
+      }
+      if (aiScore.plainSummary) extracted.aiSummary = aiScore.plainSummary;
+      if (aiScore.hypothesis) extracted.aiHypothesis = aiScore.hypothesis;
+      if (aiScore.visitSchedule) extracted.aiVisitSchedule = aiScore.visitSchedule;
+    }
+
+    const eligResult = scoreEligibility(profile, extracted, aiScore);
     const treatResult = scoreTreatmentAccess(profile, extracted);
-    const prefResult = scorePreferences(profile, extracted);
+    const prefResult = scorePreferences(profile, extracted, aiScore);
 
     // Condition relevance: score 0 = condition not found in trial's conditions list OR title.
     // These are almost certainly off-topic (CTG matched on description only).
@@ -503,15 +536,19 @@ export async function rankTrials(
       if (extracted.conditionRelevanceScore === 0) {
         prefResult.dealbreakers.push({
           category: "Condition Match",
-          reason: `"${profile.condition}" not found in this trial's condition list or title — it may have appeared in the description only. Expand to verify.`,
+          reason: aiScore
+            ? `AI determined this trial is unrelated to ${profile.condition}. Expand to verify.`
+            : `"${profile.condition}" not found in this trial's condition list or title — it may have appeared in the description only. Expand to verify.`,
         });
       } else if (extracted.conditionRelevanceScore < 0.75) {
         prefResult.dimensions.push({
           id: "condition_relevance",
           label: "Condition Match",
-          score: 50,
+          score: Math.round(extracted.conditionRelevanceScore * 100),
           status: "warn",
-          reason: `Primarily listed as "${condName}" — verify it's relevant to ${profile.condition}`,
+          reason: aiScore
+            ? `Partially relevant to ${profile.condition} — verify it matches your needs`
+            : `Primarily listed as "${condName}" — verify it's relevant to ${profile.condition}`,
         });
         eligResult.score = Math.round(eligResult.score * 0.8);
       }
