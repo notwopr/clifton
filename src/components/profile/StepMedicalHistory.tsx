@@ -113,7 +113,7 @@ export function StepMedicalHistory({ profile, onChange }: Props) {
                 >
                   <SelectTrigger className="w-44">
                     <SelectValue placeholder="Select duration">
-                      {{ lt1m: "< 1 month", "1to3m": "1–3 months", "3to6m": "3–6 months", "6plus": "6+ months" }[profile.conditionMedicationStableDuration ?? ""] ?? null}
+                      {({ lt1m: "< 1 month", "1to3m": "1–3 months", "3to6m": "3–6 months", "6plus": "6+ months" } as Record<string, string>)[profile.conditionMedicationStableDuration ?? ""] ?? null}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import type { RankedTrial } from "@/lib/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ function formatCtgDate(dateStr: string): string {
 function Highlight({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
   const q = query.trim().toLowerCase();
-  const result: (string | JSX.Element)[] = [];
+  const result: (string | React.ReactElement)[] = [];
   let remaining = text;
   let key = 0;
   while (remaining.length > 0) {

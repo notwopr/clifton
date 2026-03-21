@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { UserProfile, RankedTrial, AITrialScore } from "@/lib/types";
+import type { UserProfile, RankedTrial, AITrialScore, CTGStudy } from "@/lib/types";
 import {
   loadActiveProfile,
   loadAllProfiles,
@@ -189,7 +189,7 @@ export default function SearchPage() {
         throw new Error(err.error ?? "Failed to fetch trials");
       }
       const data = await res.json();
-      let studies: unknown[] = data.studies ?? [];
+      let studies: CTGStudy[] = (data.studies ?? []) as CTGStudy[];
 
       // Dual-fetch: if AI normalized the condition, also fetch with the original
       // user input as a separate CTG query and merge. CTG's query.cond changes
@@ -204,7 +204,7 @@ export default function SearchPage() {
           const fallbackRes = await fetch(`/api/trials?${fallbackParams.toString()}`);
           if (fallbackRes.ok) {
             const fallbackData = await fallbackRes.json();
-            const fallbackStudies: unknown[] = fallbackData.studies ?? [];
+            const fallbackStudies: CTGStudy[] = (fallbackData.studies ?? []) as CTGStudy[];
             const seen = new Set(
               studies.map(
                 (s) =>
