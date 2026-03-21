@@ -175,7 +175,17 @@ interface SearchResultsCache {
 export function hashProfile(p: UserProfile): string {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id: _id, label: _label, starredTrials: _starred, ...searchFields } = p;
-  const str = JSON.stringify(searchFields);
+  // Deep-sort all object keys for stable serialization regardless of insertion order.
+  // Using a replacer that sorts at every nesting level — plain array as 2nd arg only
+  // affects top-level keys and silently drops nested values.
+  const str = JSON.stringify(searchFields, (_, val) => {
+    if (val && typeof val === "object" && !Array.isArray(val)) {
+      return Object.fromEntries(
+        Object.entries(val as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+      );
+    }
+    return val;
+  });
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash) ^ str.charCodeAt(i);

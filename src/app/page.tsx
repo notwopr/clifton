@@ -175,8 +175,9 @@ export default function Home() {
             <span className="text-sm font-medium uppercase tracking-wide">Support the mission</span>
           </div>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-            Clifton is completely free and always will be. If it has helped you or someone you
-            love, consider supporting Alzheimer&apos;s research — or the ongoing development of this tool.
+            Clifton is completely free and always will be. Each AI-enhanced search costs ~$0.03–0.05
+            in API fees to run. If it has helped you or someone you love, consider supporting
+            Alzheimer&apos;s research — or the ongoing development of this tool.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-6 pt-2 text-left">
@@ -209,8 +210,8 @@ export default function Home() {
               >
                 <Coffee className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 <div>
-                  <span className="text-sm font-medium group-hover:text-primary transition-colors">Ko-fi</span>
-                  <p className="text-xs text-muted-foreground">Buy me a coffee</p>
+                  <span className="text-sm font-medium group-hover:text-primary transition-colors">Donate</span>
+                  <p className="text-xs text-muted-foreground">Help keep Clifton&apos;s tusk shiny ✨</p>
                 </div>
               </a>
             </div>

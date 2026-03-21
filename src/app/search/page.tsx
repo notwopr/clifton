@@ -72,7 +72,6 @@ export default function SearchPage() {
   function handleSwitchAndSearch(p: UserProfile) {
     setProfile(p);
     saveActiveProfileId(p.id);
-    setTrials([]);
     autoChecked.current = false;
     handleSearch(p);
   }
