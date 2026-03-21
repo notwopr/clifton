@@ -4,7 +4,7 @@
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
-**Clifton** (**cli**nical trial si**ft**er) pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time and ranks them by how well they fit a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
+**Clifton** (**cli**nical trial si**ft**er) pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time, uses Google Gemini AI to normalize your condition, expand synonyms, and score each trial for relevance, eligibility, and fit — then ranks them by how well they match a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
 
 It was built because searching ClinicalTrials.gov manually — filtering, reading eligibility criteria, cross-referencing medications and comorbidities — takes hours per search and has to be repeated every few weeks as new trials open. Clifton does that work in seconds.
 
@@ -12,21 +12,24 @@ It was built because searching ClinicalTrials.gov manually — filtering, readin
 
 ---
 
-## Live demo
+## Live
 
-[clifton.vercel.app](https://clifton.vercel.app) *(update this link after deploying)*
+[clifton-topaz.vercel.app](https://clifton-topaz.vercel.app)
 
 ---
 
 ## Features
 
+- **AI-enhanced matching** — Google Gemini normalizes your condition, expands synonyms, and scores each trial for relevance, comorbidity conflicts, medication conflicts, dealbreakers, and must-haves
+- **Plain-English summaries** — Clifton rewrites each trial's description in patient-friendly language
+- **"Why it might work"** — AI hypothesis drawing on published research and prior trials for each treatment
 - **Profile-based ranking** — enter age, sex, comorbidities, current medications, and preferences once; the app scores every trial against that profile
 - **Three-dimension scoring** — Eligibility (40%) · Treatment Access (20%) · Preference Match (40%)
 - **Dealbreaker system** — mark delivery methods, procedures, or free-form conditions as dealbreakers; excluded trials stay visible so you can reconsider
 - **Distance-sorted sites** — every trial site ranked by drive distance from your ZIP code, with contacts shown inline
 - **New trial detection** — on each re-search, trials that weren't present last time are highlighted with a NEW badge
-- **Auto-check on load** — if the last search is more than a week old, the app re-runs it automatically when you open the page
-- **Export action plan** — star your top trials, then export as a formatted PDF (print), copy to clipboard, or download as `.txt`
+- **24-hour results cache** — results are cached locally; re-searching within 24h with an unchanged profile returns instantly without hitting the API
+- **Export** — star your top trials, then export as PDF (print), `.txt`, CSV, or copy to clipboard
 - **Fully private** — your profile never leaves your browser; no account, no tracking, no server-side storage
 - **Dark / light mode** — toggle in the top-right corner; preference is saved locally
 - **Free and open source** — MIT license
@@ -40,10 +43,11 @@ It was built because searching ClinicalTrials.gov manually — filtering, readin
 | Framework | Next.js 15 (App Router) |
 | UI components | shadcn/ui v4 (base-ui) |
 | Styling | Tailwind CSS v4 |
+| AI | Google Gemini 2.5 Flash Lite |
 | Data source | ClinicalTrials.gov v2 REST API (free, no auth) |
 | Geocoding | zippopotam.us (free, no auth) |
 | Storage | Browser `localStorage` only |
-| Hosting | Vercel free tier |
+| Hosting | Vercel |
 
 ---
 
@@ -53,6 +57,7 @@ It was built because searching ClinicalTrials.gov manually — filtering, readin
 
 - Node.js 18+
 - npm / pnpm / yarn / bun
+- Google AI API key (free tier available at [aistudio.google.com](https://aistudio.google.com))
 
 ### Run locally
 
@@ -60,12 +65,23 @@ It was built because searching ClinicalTrials.gov manually — filtering, readin
 git clone https://github.com/notwopr/clifton.git
 cd clifton
 npm install
+```
+
+Create a `.env.local` file:
+
+```
+GOOGLE_AI_API_KEY=your_key_here
+```
+
+Then:
+
+```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-No environment variables are required. The app calls ClinicalTrials.gov and zippopotam.us directly — both are free and require no API keys.
+AI features require the API key. Without it the app falls back to deterministic ranking.
 
 ### Build for production
 
@@ -78,7 +94,7 @@ npm start
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/notwopr/clifton)
 
-No environment variables needed. The free tier is sufficient.
+Add `GOOGLE_AI_API_KEY` as an environment variable in your Vercel project settings before deploying.
 
 ---
 
@@ -89,49 +105,52 @@ src/
   app/
     page.tsx              # Landing page
     search/page.tsx       # Main search + results page (client)
-    api/trials/route.ts   # Edge route — proxies ClinicalTrials.gov (1hr cache)
+    api/trials/route.ts   # Edge route — proxies ClinicalTrials.gov
+    api/ai/route.ts       # Edge route — Gemini AI (enrich-query, score-trials)
     globals.css           # Tailwind v4 theme + color variables
-    layout.tsx            # Root layout with header + dark mode
+    layout.tsx            # Root layout with header
   components/
     profile/              # 4-step profile wizard (condition, demographics, history, preferences)
-    results/              # ResultsPanel, TrialCard, ScoreBar
+    results/              # ResultsPanel, TrialCard
     ThemeToggle.tsx       # Dark/light mode toggle
     ui/                   # shadcn/ui primitives
   lib/
     types.ts              # All TypeScript types + defaults
     clinicaltrials.ts     # ClinicalTrials.gov API client
     eligibility.ts        # Data extraction (delivery methods, procedures, locations, distances)
-    ranking.ts            # Scoring engine (eligibility, treatment access, preference match)
-    storage.ts            # localStorage helpers (profile + trial snapshots)
+    ranking.ts            # Scoring engine (eligibility, treatment access, preference match, AI integration)
+    storage.ts            # localStorage helpers (profiles, trial snapshots, results cache)
 public/
-  logo.svg                # Full wordmark logo (navbar, light mode)
+  logo.svg                # Full wordmark logo
   logo-dark.svg           # Wordmark logo variant for dark backgrounds
-  icon.svg                # Square icon/logomark only (app icon, favicon source)
+  icon.svg                # Square icon/logomark
   og-image.png            # Social sharing preview (1200×630)
 ```
 
 ### Data flow
 
 1. User fills in profile (saved to `localStorage` on every change)
-2. On search: zip → lat/lon via zippopotam.us, then fetch up to 200 recruiting interventional trials via `/api/trials` (proxied edge route with 1hr cache)
-3. Each study is scored across three dimensions; dealbreakers collapse composite score to 0 but keep trial visible
-4. Results sorted: non-dealbreakers by composite score desc, then dealbreakers by eligibility score desc
-5. NCT IDs saved to `localStorage` snapshot; next search highlights new arrivals
+2. On search: check 24h results cache — if profile unchanged and cache fresh, return immediately
+3. Otherwise: zip → lat/lon via zippopotam.us; Gemini normalizes condition + expands synonyms
+4. Fetch up to 500 recruiting interventional trials via `/api/trials`
+5. All trials batched in parallel to Gemini for AI scoring (relevance, conflicts, summaries, hypotheses)
+6. Each study scored across three dimensions; AI scores boost (never reduce) deterministic scores
+7. Dealbreakers collapse composite score to 0 but keep trial visible
+8. Results sorted: non-dealbreakers by composite score desc, then dealbreakers by eligibility score desc
+9. NCT IDs saved to `localStorage` snapshot; next search highlights new arrivals
 
 ---
 
 ## Privacy
 
-- No user data is sent to any server operated by Clifton
-- Profile data is stored only in your browser's `localStorage`
-- The only outbound requests are to ClinicalTrials.gov (condition + keywords) and zippopotam.us (ZIP code → coordinates)
+- Profile data and results are stored only in your browser's `localStorage`
+- Health data (age, conditions, medications, comorbidities) is sent to Google Gemini AI for scoring — **no names or personally identifying information**
+- The only other outbound requests are to ClinicalTrials.gov and zippopotam.us
 - No analytics, no cookies, no tracking of any kind
 
 ---
 
 ## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Bug reports and pull requests are welcome. Please open an issue before starting significant work so we can discuss approach.
 
@@ -139,7 +158,7 @@ Bug reports and pull requests are welcome. Please open an issue before starting 
 
 ## Disclaimer
 
-Clifton is an independent tool and is **not affiliated with** ClinicalTrials.gov, the NIH, the FDA, or any pharmaceutical company or clinical research organization.
+Clifton is an independent tool and is **not affiliated with** ClinicalTrials.gov, the NIH, the FDA, Google, or any pharmaceutical company or clinical research organization.
 
 Trial data is sourced from ClinicalTrials.gov and may not be complete or current. Eligibility scoring is heuristic and **will not catch every exclusion criterion** — always read the full protocol and speak with a qualified investigator before enrolling.
 
@@ -149,13 +168,10 @@ Trial data is sourced from ClinicalTrials.gov and may not be complete or current
 
 ## Donations
 
-Clifton is and will always be free. If it has helped you or someone you love, consider supporting Alzheimer's research:
+Clifton is free and always will be. Each AI-enhanced search costs ~$0.03–0.05 in API fees to run. If it has helped you or someone you love:
 
-- [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate)
-
-To support the ongoing development of Clifton:
-
-- [Ko-fi](https://ko-fi.com/notwopr)
+- [Help keep Clifton's tusks shiny 🦭](https://ko-fi.com/notwopr) — support ongoing development
+- [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate) — support the research
 
 ---
 
