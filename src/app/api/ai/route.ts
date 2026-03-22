@@ -116,7 +116,25 @@ Return only the JSON array. No markdown, no explanation, no code blocks.`;
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 
+const ALLOWED_ORIGINS = [
+  "https://clifton-topaz.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+];
+
 export async function POST(req: NextRequest) {
+  // Block requests not originating from the app itself
+  const origin = req.headers.get("origin") ?? "";
+  const referer = req.headers.get("referer") ?? "";
+  const isAllowed = ALLOWED_ORIGINS.some(
+    (o) => origin.startsWith(o) || referer.startsWith(o)
+  );
+  if (!isAllowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   if (!process.env.GOOGLE_AI_API_KEY) {
     return NextResponse.json({ error: "AI not configured" }, { status: 503 });
   }
