@@ -1,5 +1,7 @@
 # Contributing to Clifton
 
+> 🦭 **Clifton is free to use and always will be.** Each AI-enhanced search costs ~$0.03–0.05 to run. If you find it useful, [help keep Clifton's tusks shiny](https://ko-fi.com/notwopr).
+
 Thank you for your interest in contributing. Clifton exists to help patients and caregivers navigate clinical trials — contributions that improve accuracy, accessibility, or usability are very welcome.
 
 ## Ground rules
@@ -60,6 +62,13 @@ No environment variables required.
 - Functional React components with hooks
 - Keep components focused; the ranking logic lives in `src/lib/` and should stay separate from UI
 - Tailwind v4 utility classes; avoid custom CSS unless necessary
+
+## Support the project
+
+Clifton runs on AI API calls that cost real money. If you use Clifton and want to help keep it running:
+
+- 🦭 [Ko-fi — help keep Clifton's tusks shiny](https://ko-fi.com/notwopr)
+- ❤️ [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate)
 
 ## Disclaimer
 
