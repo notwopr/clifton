@@ -1,5 +1,6 @@
 import type { UserProfile, RankedTrial } from "./types";
 import { defaultProfile } from "./types";
+import LZString from "lz-string";
 
 const PROFILES_KEY = "clifton_profiles";
 const ACTIVE_KEY = "clifton_active_profile";
@@ -201,17 +202,16 @@ export function saveSearchResults(
   totalFromApi: number
 ): void {
   if (typeof window === "undefined") return;
+  const searchedAt = new Date().toISOString();
+  // Try progressively smaller slices until it fits in localStorage (~5MB limit).
+  // Alzheimer's + dual-fetch can produce 700+ trials which easily exceeds quota.
   try {
     const existing = loadAllResultsCache();
-    existing[profileId] = {
-      profileHash,
-      searchedAt: new Date().toISOString(),
-      trials,
-      totalFromApi,
-    };
-    localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify(existing));
+    existing[profileId] = { profileHash, searchedAt, trials, totalFromApi };
+    const compressed = LZString.compress(JSON.stringify(existing));
+    localStorage.setItem(RESULTS_CACHE_KEY, compressed);
   } catch {
-    // Quota exceeded or serialization error — non-fatal
+    // Non-fatal — next search will just re-run
   }
 }
 
@@ -236,7 +236,10 @@ export function loadSearchResults(
 function loadAllResultsCache(): Record<string, SearchResultsCache> {
   try {
     const raw = localStorage.getItem(RESULTS_CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    // Support both compressed (new) and uncompressed (legacy) formats
+    const decompressed = LZString.decompress(raw);
+    return JSON.parse(decompressed ?? raw);
   } catch {
     return {};
   }

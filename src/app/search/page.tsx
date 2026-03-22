@@ -227,7 +227,7 @@ export default function SearchPage() {
       // Split all trials into batches of 100 and fire them in parallel.
       // Each batch completes in ~8-12s; running in parallel keeps total time
       // under the 45s timeout even for 500 results.
-      const AI_BATCH_SIZE = 100;
+      const AI_BATCH_SIZE = 75;
       setLoadingMessage("Clifton is scoring and matching trials…");
       let aiScores: Map<string, AITrialScore> | undefined;
       if (studies.length > 0) {

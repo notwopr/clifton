@@ -18,7 +18,7 @@ async function callGemini(prompt: string): Promise<string> {
         temperature: 0.1,
       },
     }),
-    signal: AbortSignal.timeout(45_000),
+    signal: AbortSignal.timeout(90_000),
   });
 
   if (!res.ok) throw new Error(`Gemini error ${res.status}: ${await res.text()}`);
