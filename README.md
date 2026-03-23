@@ -4,7 +4,7 @@
 
 **Find and rank clinical trials — automatically matched to a patient's profile.**
 
-> 🦭 **Clifton is free and always will be.** Each AI-enhanced search costs ~$0.03–0.05 to run. If it helps you or someone you love, [help keep Clifton's tusks shiny](https://ko-fi.com/notwopr) or [donate to Alzheimer's research](https://www.alz.org/help-support/i-want-to-help/donate).
+> 🦭 **Clifton is free and always will be.** Each AI-enhanced search costs ~$0.05–0.10 to run. If it helps you or someone you love, [help keep Clifton's tusks shiny](https://ko-fi.com/notwopr) or [donate to Alzheimer's research](https://www.alz.org/help-support/i-want-to-help/donate).
 
 **Clifton** (**cli**nical trial si**ft**er) pulls every actively recruiting interventional trial from [ClinicalTrials.gov](https://clinicaltrials.gov) in real time, uses Google Gemini AI to normalize your condition, expand synonyms, and score each trial for relevance, eligibility, and fit — then ranks them by how well they match a specific patient: eligibility likelihood, odds of receiving active treatment, travel distance, procedural burden, and personal preferences.
 
@@ -170,7 +170,7 @@ Trial data is sourced from ClinicalTrials.gov and may not be complete or current
 
 ## Support Clifton
 
-Clifton is free and always will be. Each AI-enhanced search costs ~$0.03–0.05 in API fees to run.
+Clifton is free and always will be. Each AI-enhanced search costs ~$0.05–0.10 in API fees to run.
 
 | | |
 |---|---|

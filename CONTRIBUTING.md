@@ -1,6 +1,6 @@
 # Contributing to Clifton
 
-> 🦭 **Clifton is free to use and always will be.** Each AI-enhanced search costs ~$0.03–0.05 to run. If you find it useful, [help keep Clifton's tusks shiny](https://ko-fi.com/notwopr).
+> 🦭 **Clifton is free to use and always will be.** Each AI-enhanced search costs ~$0.05–0.10 to run. If you find it useful, [help keep Clifton's tusks shiny](https://ko-fi.com/notwopr).
 
 Thank you for your interest in contributing. Clifton exists to help patients and caregivers navigate clinical trials — contributions that improve accuracy, accessibility, or usability are very welcome.
 
@@ -54,7 +54,15 @@ npm run build      # production build + type-check
 npm run lint       # ESLint
 ```
 
-No environment variables required.
+Create a `.env.local` file in the project root:
+
+```
+GOOGLE_AI_API_KEY=your_key_here
+```
+
+Get a free key at [aistudio.google.com](https://aistudio.google.com). The free tier (Gemini 2.5 Flash Lite) is sufficient for local development. Without the key the app falls back to deterministic ranking — AI features (summaries, hypotheses, relevance scoring) will be disabled.
+
+The model is configured in `src/app/api/ai/route.ts` (`GEMINI_MODEL` constant). Any Gemini model that supports JSON output mode can be substituted.
 
 ## Code style
 
