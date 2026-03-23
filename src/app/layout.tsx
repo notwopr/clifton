@@ -36,7 +36,7 @@ export default function RootLayout({
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-xs font-medium text-foreground">Each AI search costs ~$0.03 to run.</p>
+                  <p className="text-xs font-medium text-foreground">Each AI search costs ~$0.05–0.10 to run.</p>
                   <p className="text-xs text-foreground">Help keep Clifton&apos;s tusks shiny.</p>
                 </div>
                 <a

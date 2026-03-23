@@ -175,7 +175,7 @@ export default function Home() {
             <span className="text-sm font-medium uppercase tracking-wide">Support the mission</span>
           </div>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-            Clifton is completely free and always will be. Each AI-enhanced search costs ~$0.03–0.05
+            Clifton is completely free and always will be. Each AI-enhanced search costs ~$0.05–0.10
             in API fees to run. If it has helped you or someone you love, consider supporting
             Alzheimer&apos;s research — or the ongoing development of this tool.
           </p>
