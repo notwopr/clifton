@@ -71,28 +71,9 @@ The model is configured in `src/app/api/ai/route.ts` (`GEMINI_MODEL` constant). 
 - Keep components focused; the ranking logic lives in `src/lib/` and should stay separate from UI
 - Tailwind v4 utility classes; avoid custom CSS unless necessary
 
-## AI API cost estimates
-
-Each search makes two types of Gemini API calls:
-
-| Call | When | Approx. tokens |
-|---|---|---|
-| `enrich-query` | Once per search | ~600 input, ~100 output |
-| `score-trials` | Batches of 75 trials, run in parallel | ~28,000 input + ~18,000 output per batch |
-
-For a typical large condition (e.g. Alzheimer's, ~500 trials across 7 batches):
-
-| | Tokens | Cost at Gemini 2.5 Flash Lite rates |
-|---|---|---|
-| Input | ~200,000 | ~$0.020 |
-| Output | ~120,000 | ~$0.048 |
-| **Total** | | **~$0.05–0.10 per search** |
-
-Smaller conditions with fewer trials cost proportionally less (~$0.01–0.03). Gemini 2.5 Flash Lite pricing: $0.10/1M input tokens, $0.40/1M output tokens. Verify current rates at [ai.google.dev/pricing](https://ai.google.dev/pricing).
-
 ## Support the project
 
-Clifton runs on AI API calls that cost real money. If you use Clifton and want to help keep it running:
+Clifton is free and always will be. Each AI-enhanced search costs ~$0.05–0.10 in API fees to run. If you use Clifton and want to help keep it running:
 
 - 🦭 [Ko-fi — help keep Clifton's tusks shiny](https://ko-fi.com/notwopr)
 - ❤️ [Alzheimer's Association](https://www.alz.org/help-support/i-want-to-help/donate)
