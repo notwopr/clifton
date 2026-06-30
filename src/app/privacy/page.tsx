@@ -21,8 +21,8 @@ export default function PrivacyPage() {
         Short version: <strong>Clifton does not collect or store your data.</strong> Your
         profile is saved only in your own browser and is never sent to us. When you run a
         search, anonymized health information (condition, age, medical history) is sent to
-        Google Gemini AI to improve matching quality. No names or identifying information
-        are included. See details below.
+        a third-party AI provider to improve matching quality. No names or identifying
+        information are included. See details below.
       </div>
 
       <section className="space-y-2">
@@ -53,22 +53,15 @@ export default function PrivacyPage() {
         </p>
         <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-2">
           <li>
-            <strong>Google Gemini AI</strong> — to improve search quality and generate trial
-            summaries, the following profile fields are sent to Google&apos;s Gemini API:
+            <strong>Third-party AI provider</strong> — to improve search quality and generate trial
+            summaries, the following profile fields are sent to an external AI API:
             condition, age, sex, comorbidities, current medications, recent procedures, free-text
             notes, and preferences (dealbreakers / must-haves). <strong>No name, contact
             information, or other identifying details are included.</strong> You use this feature
             at your own risk. Do not enter information that could identify you (full name, address,
-            insurance ID, etc.). Google may process and retain this data in accordance with their
-            own terms.{" "}
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              Google Privacy Policy →
-            </a>
+            insurance ID, etc.). The AI provider may process and retain this data in accordance with
+            their own terms. The specific provider in use is noted on the{" "}
+            <a href="/updates" className="underline">Updates</a> page.
           </li>
           <li>
             <strong>ClinicalTrials.gov</strong> — your condition name and any additional keywords
