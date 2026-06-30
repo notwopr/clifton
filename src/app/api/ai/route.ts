@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { AITrialScore } from "@/lib/types";
+import { AI_MODEL_ID } from "@/lib/ai-config";
 
-const DEEPSEEK_MODEL = "deepseek-v4-flash";
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
 
 async function callDeepSeek(prompt: string): Promise<string> {
@@ -15,7 +15,7 @@ async function callDeepSeek(prompt: string): Promise<string> {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: DEEPSEEK_MODEL,
+      model: AI_MODEL_ID,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
       response_format: { type: "json_object" },

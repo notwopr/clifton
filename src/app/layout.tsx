@@ -7,6 +7,7 @@ import "./globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThemeRandomizer } from "@/components/ThemeRandomizer";
 import { NavLogo } from "@/components/NavLogo";
+import { AI_MODEL_DISPLAY } from "@/lib/ai-config";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -34,8 +35,13 @@ export default function RootLayout({
           <div className="container max-w-5xl mx-auto px-4 h-32 flex items-end pb-3 justify-between">
             <NavLogo />
             <div className="flex items-center gap-3">
-              <Link href="/updates" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                Updates
+              <Link
+                href="/updates"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                title="View AI model update history"
+              >
+                <span className="size-1.5 rounded-full bg-green-500 shrink-0" />
+                {AI_MODEL_DISPLAY}
               </Link>
               <div className="hidden sm:flex items-center gap-3">
                 <div className="text-right">
