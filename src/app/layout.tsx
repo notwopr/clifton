@@ -34,6 +34,9 @@ export default function RootLayout({
           <div className="container max-w-5xl mx-auto px-4 h-32 flex items-end pb-3 justify-between">
             <NavLogo />
             <div className="flex items-center gap-3">
+              <Link href="/updates" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                Updates
+              </Link>
               <div className="hidden sm:flex items-center gap-3">
                 <div className="text-right">
                   <p className="text-xs font-medium text-foreground">Each AI search costs ~$0.05–0.10 to run.</p>
