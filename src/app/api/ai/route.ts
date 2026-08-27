@@ -2,31 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import type { AITrialScore } from "@/lib/types";
 import { AI_MODEL_ID } from "@/lib/ai-config";
 
-const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL_ID}:generateContent`;
 
-async function callDeepSeek(prompt: string): Promise<string> {
-  const apiKey = process.env.DEEPSEEK_AI_API_KEY;
-  if (!apiKey) throw new Error("DEEPSEEK_AI_API_KEY not configured");
+async function callGemini(prompt: string): Promise<string> {
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_AI_API_KEY not configured");
 
-  const res = await fetch(DEEPSEEK_URL, {
+  const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: AI_MODEL_ID,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.1,
-      response_format: { type: "json_object" },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.1,
+      },
     }),
     signal: AbortSignal.timeout(90_000),
   });
 
-  if (!res.ok) throw new Error(`DeepSeek error ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini error ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error("Empty response from DeepSeek");
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Empty response from Gemini");
   return text;
 }
 
@@ -45,7 +43,7 @@ Return a JSON object with exactly these two fields:
 
 Respond with only valid JSON, no markdown code blocks.`;
 
-  const text = await callDeepSeek(prompt);
+  const text = await callGemini(prompt);
   return JSON.parse(text);
 }
 
@@ -112,7 +110,7 @@ For EACH trial, return a JSON array where each object contains:
 
 Return only the JSON array. No markdown, no explanation, no code blocks.`;
 
-  const text = await callDeepSeek(prompt);
+  const text = await callGemini(prompt);
   return JSON.parse(text);
 }
 
@@ -137,7 +135,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!process.env.DEEPSEEK_AI_API_KEY) {
+  if (!process.env.GOOGLE_AI_API_KEY) {
     return NextResponse.json({ error: "AI not configured" }, { status: 503 });
   }
 

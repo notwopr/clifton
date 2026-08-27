@@ -8,6 +8,11 @@ export const metadata: Metadata = {
 
 const updates = [
   {
+    date: "August 27, 2026",
+    title: "AI model switched back to Gemini 2.5 Flash Lite",
+    body: "The AI powering trial scoring and query enrichment has been switched from DeepSeek V4 Flash back to Google Gemini 2.5 Flash Lite. Results and behavior should be equivalent. If you notice anything unexpected, please open an issue on GitHub.",
+  },
+  {
     date: "June 29, 2026",
     title: "AI model switched to DeepSeek V4 Flash",
     body: "The AI powering trial scoring and query enrichment has been switched from Google Gemini 2.5 Flash Lite to DeepSeek V4 Flash. Results and behavior should be equivalent. If you notice anything unexpected, please open an issue on GitHub.",

@@ -42,20 +42,6 @@ export default function RootLayout({
               <Link href="/updates" className="hidden sm:block text-xs text-muted-foreground hover:text-foreground transition-colors">
                 Updates
               </Link>
-              <div className="hidden sm:flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-xs font-medium text-foreground">Each AI search costs ~$0.05–0.10 to run.</p>
-                  <p className="text-xs text-foreground">Help keep Clifton&apos;s tusks shiny.</p>
-                </div>
-                <a
-                  href="https://ko-fi.com/notwopr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors shrink-0"
-                >
-                  Donate
-                </a>
-              </div>
               <ThemeRandomizer />
               <ThemeToggle />
             </div>
