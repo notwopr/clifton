@@ -14,8 +14,6 @@ import {
   SortDesc,
   Share2,
   Bell,
-  Heart,
-  Coffee,
   Sparkles,
 } from "lucide-react";
 
@@ -165,58 +163,6 @@ export default function Home() {
           Get started
           <ChevronRight className="h-4 w-4" />
         </Button>
-      </section>
-
-      {/* Support */}
-      <section className="py-16 px-4 bg-muted/20 border-t">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Heart className="h-4 w-4 text-rose-400" />
-            <span className="text-sm font-medium uppercase tracking-wide">Support the mission</span>
-          </div>
-          <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-            Clifton is completely free and always will be. Each AI-enhanced search costs ~$0.05–0.10
-            in API fees to run. If it has helped you or someone you love, consider supporting
-            Alzheimer&apos;s research — or the ongoing development of this tool.
-          </p>
-
-          <div className="grid sm:grid-cols-2 gap-6 pt-2 text-left">
-            {/* Research donations */}
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Donate to Alzheimer&apos;s research
-              </p>
-              <a
-                href="https://www.alz.org/help-support/i-want-to-help/donate"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col gap-0.5 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
-              >
-                <span className="text-sm font-medium group-hover:text-primary transition-colors">Alzheimer&apos;s Association →</span>
-                <span className="text-xs text-muted-foreground">Largest funder of Alzheimer&apos;s research in the US</span>
-              </a>
-            </div>
-
-            {/* Developer support */}
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Support the developer
-              </p>
-<a
-                href="https://ko-fi.com/notwopr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:border-primary/40 hover:shadow-sm transition-all group"
-              >
-                <Coffee className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                <div>
-                  <span className="text-sm font-medium group-hover:text-primary transition-colors">Donate</span>
-                  <p className="text-xs text-muted-foreground">Help keep Clifton&apos;s tusk shiny ✨</p>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Footer */}
